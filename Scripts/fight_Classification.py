@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     totalDF = (df_by_totals())
-    df = pd.read_csv("../DataFiles2/CleanData.csv", index_col=0)
+    df = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\CleanData.csv", index_col=0)
 
     # Finding the percent of total strikes landed that are from Standing Position
     # Finding the average percent of total strikes landed that are from the Standing Position

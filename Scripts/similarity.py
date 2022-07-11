@@ -5,7 +5,7 @@ from sklearn import preprocessing
 from collections import defaultdict
 
 def similarFights(fight_num, includeWinner=False, byTotals=False):
-    df = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\DataFiles2\\CleanData.csv", index_col=0)
+    df = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\CleanData.csv", index_col=0)
     if not byTotals:
         pure_data1 = df[['KD_RED', 'KD_BLUE', 'SIG_STR_ATT_RED', 'SIG_STR_LAND_BLUE', 'SIG_STR_ATT_BLUE',
                          'TOTAL_STR_LAND_RED', 'TOTAL_STR_ATT_RED', 'TOTAL_STR_LAND_BLUE', 'TOTAL_STR_ATT_BLUE',
@@ -34,7 +34,7 @@ def similarFights(fight_num, includeWinner=False, byTotals=False):
 
 
 def df_by_totals():
-    df = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\DataFiles2\\CleanData.csv", index_col=0)
+    df = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\CleanData.csv", index_col=0)
     totals_dict = defaultdict(list)
 
     for i in range(len(df)):
@@ -74,7 +74,7 @@ def similarityAnalysis(fightNumber):
         tindex = t.index
         ntindex = nt.index
 
-        df = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\DataFiles2\\CleanData.csv", index_col=0)
+        df = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\CleanData.csv", index_col=0)
         fight = (df.iloc[fightNumber:fightNumber + 1, :])
 
         tdf = (df.iloc[tindex, :])
@@ -92,7 +92,7 @@ def similarityAnalysis(fightNumber):
         df2 = df2.iloc[tindex, :]
 
 
-        with pd.ExcelWriter("../DataFiles2/SimilarityAnalysis.xlsx") as writer:
+        with pd.ExcelWriter("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\SimilarityAnalysis.xlsx") as writer:
             t.to_excel(writer, sheet_name="Home")
             nt.to_excel(writer, sheet_name="Home", startcol=4)
 
@@ -110,7 +110,7 @@ def similarityAnalysis(fightNumber):
 if __name__ == "__main__":
     print(similarFights(119, byTotals=True))
     print(similarFights(119))
-    similarityAnalysis(119)
+    # similarityAnalysis(119)
 
 
 

@@ -67,7 +67,7 @@ def tufDivisionSeperator(division):
 
 if __name__ == "__main__":
 
-    df = pd.read_csv('../DataFiles2/MasterFightList.csv', index_col=0)
+    df = pd.read_csv('C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\MasterFightList.csv', index_col=0)
     df["FIGHTER_RED"] = df["FIGHTER_RED"].apply(lambda x: x.replace("'", ""))
     df["FIGHTER_BLUE"] = df["FIGHTER_BLUE"].apply(lambda x: x.replace("'", ""))
     df["EVENT"] = df["EVENT"].apply(lambda x: x.replace("vs.", "vs"))
@@ -100,7 +100,7 @@ if __name__ == "__main__":
 
     df["WeightClass"] = div
     df["TitleFight"] = title_Fight
-    df.to_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\DataFiles2\\CleanData.csv", header=True)
+    df.to_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\CleanData.csv", header=True)
 
 
 
@@ -112,5 +112,5 @@ if __name__ == "__main__":
         fighter.append(ff)
 
     fighter = set(fighter)
-    pd.DataFrame(fighter, columns=["Name"]).sort_values(by="Name").reset_index(drop=True).to_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\DataFiles2\\UFC_Fighters.csv", header=True)
+    pd.DataFrame(fighter, columns=["Name"]).sort_values(by="Name").reset_index(drop=True).to_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\UFC_Fighters.csv", header=True)
 
