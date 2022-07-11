@@ -1,6 +1,6 @@
 import pandas as pd
 import streamlit as st
-from similarity import similarFights
+# from similarity import similarFights
 
 
 def noStreamlitIndex():
@@ -32,43 +32,43 @@ if rad == "Home":
         noStreamlitIndex()
         st.table(winner)
 
-if rad == "Similar Fights":
-    searchBy = st.selectbox("Search By Fighter or Event", ["Fighter", "Event"])
-    if searchBy == "Event":
-        events = cleanDataDF["EVENT"].unique()
-        eventSelection = st.selectbox("Choose the Event", events)
-        with st.form("MyForm"):
-            bouts = cleanDataDF[cleanDataDF["EVENT"] == eventSelection]
-            boutSelection = st.selectbox("Choose the fight", bouts["BOUT"].unique())
-            spoiler2 = st.checkbox("Display Winner")
-            submit_button = st.form_submit_button(label='Submit')
-
-            if submit_button:
-                st.subheader("10 Most Similar Fights")
-                id = cleanDataDF[(cleanDataDF["EVENT"] == eventSelection) & (cleanDataDF["BOUT"] == boutSelection)].index[0]
-                if spoiler2:
-                    st.table(similarFights(id, byTotals=True, includeWinner=True))
-                else:
-                    st.table(similarFights(id, byTotals=True))
-
-    else:
-        fighters = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\UFC_Fighters.csv", index_col=0)
-        fighterSelection = st.selectbox("Choose the Fighter", fighters)
-        with st.form("MyForm"):
-            bouts = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
-            event_bout =  bouts["BOUT"] + " --- " + bouts["EVENT"]
-            fightSelection = st.selectbox("Choose the Fight", event_bout)
-            fightSelection = fightSelection.split(" --- ")
-
-            spoiler3 = st.checkbox("Display Winner")
-            submit_button = st.form_submit_button(label='Submit')
-
-            if submit_button:
-                st.subheader("10 Most Similar Fights")
-                id = cleanDataDF[(cleanDataDF["EVENT"] == fightSelection[1]) & (cleanDataDF["BOUT"] == fightSelection[0])].index[0]
-                noStreamlitIndex()
-                if spoiler3:
-                    st.table(similarFights(id, byTotals=True, includeWinner=True))
-                else:
-                    st.table(similarFights(id, byTotals=True))
+# if rad == "Similar Fights":
+#     searchBy = st.selectbox("Search By Fighter or Event", ["Fighter", "Event"])
+#     if searchBy == "Event":
+#         events = cleanDataDF["EVENT"].unique()
+#         eventSelection = st.selectbox("Choose the Event", events)
+#         with st.form("MyForm"):
+#             bouts = cleanDataDF[cleanDataDF["EVENT"] == eventSelection]
+#             boutSelection = st.selectbox("Choose the fight", bouts["BOUT"].unique())
+#             spoiler2 = st.checkbox("Display Winner")
+#             submit_button = st.form_submit_button(label='Submit')
+#
+#             if submit_button:
+#                 st.subheader("10 Most Similar Fights")
+#                 id = cleanDataDF[(cleanDataDF["EVENT"] == eventSelection) & (cleanDataDF["BOUT"] == boutSelection)].index[0]
+#                 if spoiler2:
+#                     st.table(similarFights(id, byTotals=True, includeWinner=True))
+#                 else:
+#                     st.table(similarFights(id, byTotals=True))
+#
+#     else:
+#         fighters = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\UFC_Fighters.csv", index_col=0)
+#         fighterSelection = st.selectbox("Choose the Fighter", fighters)
+#         with st.form("MyForm"):
+#             bouts = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
+#             event_bout =  bouts["BOUT"] + " --- " + bouts["EVENT"]
+#             fightSelection = st.selectbox("Choose the Fight", event_bout)
+#             fightSelection = fightSelection.split(" --- ")
+#
+#             spoiler3 = st.checkbox("Display Winner")
+#             submit_button = st.form_submit_button(label='Submit')
+#
+#             if submit_button:
+#                 st.subheader("10 Most Similar Fights")
+#                 id = cleanDataDF[(cleanDataDF["EVENT"] == fightSelection[1]) & (cleanDataDF["BOUT"] == fightSelection[0])].index[0]
+#                 noStreamlitIndex()
+#                 if spoiler3:
+#                     st.table(similarFights(id, byTotals=True, includeWinner=True))
+#                 else:
+#                     st.table(similarFights(id, byTotals=True))
 
