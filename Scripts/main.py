@@ -1,6 +1,6 @@
 import pandas as pd
 import os
-from Scraping_Files import scrape_ufc_stats_library as LIB
+from UFCProject.Scraping_Files import scrape_ufc_stats_library as LIB
 import importlib
 importlib.reload(LIB)
 import yaml
