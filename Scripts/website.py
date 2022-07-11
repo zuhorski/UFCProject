@@ -14,14 +14,14 @@ def noStreamlitIndex():
     st.markdown(hide_table_row_index, unsafe_allow_html=True)
 
 
-cleanDataDF = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\DataFiles2\\CleanData.csv", index_col=0)
+cleanDataDF = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\CleanData.csv", index_col=0)
 
 with st.sidebar:
     rad = st.radio("Selection", ("Home", "Similar Fights"))
 
 if rad == "Home":
     st.title("Most Recent UFC Event", anchor="Home_Page")
-    spoiler1 = st.radio("Show the Winner?", options=["Yes", "No"])
+    spoiler1 = st.radio("Show the Winner?", options=["No", "Yes"])
     if spoiler1 == "No":
         noWinner = cleanDataDF[cleanDataDF["EVENT"] == cleanDataDF.iloc[0, 0]].iloc[:, [0, 1, -2, ]]
         noStreamlitIndex()
@@ -52,7 +52,7 @@ if rad == "Similar Fights":
                     st.table(similarFights(id, byTotals=True))
 
     else:
-        fighters = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\DataFiles2\\UFC_Fighters.csv", index_col=0)
+        fighters = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\UFC_Fighters.csv", index_col=0)
         fighterSelection = st.selectbox("Choose the Fighter", fighters)
         with st.form("MyForm"):
             bouts = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
