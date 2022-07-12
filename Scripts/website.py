@@ -14,10 +14,21 @@ def noStreamlitIndex():
     st.markdown(hide_table_row_index, unsafe_allow_html=True)
 
 
+def record(win, loss, draw, nc, text):
+    if (draw == 0) & (nc == 0):
+        st.write(f"{text}: {win}-{loss}")
+    elif (draw != 0) & (nc == 0):
+        st.write(f"{text}: {win}-{loss}-{draw}")
+    elif (draw != 0) & (nc != 0):
+        st.write(f"{text}: {win}-{loss}-{draw} ({nc} NC)")
+    elif (draw == 0) & (nc != 0):
+        st.write(f"{text}: {win}-{loss} ({nc} NC)")
+
+
 cleanDataDF = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\CleanData.csv", index_col=0)
 
 with st.sidebar:
-    rad = st.radio("Selection", ("Home", "Similar Fights"))
+    rad = st.radio("Selection", ("Home", "Fighter", "Similar Fights"))
 
 if rad == "Home":
     st.title("Most Recent UFC Event", anchor="Home_Page")
@@ -31,6 +42,7 @@ if rad == "Home":
         winner = cleanDataDF[cleanDataDF["EVENT"] == cleanDataDF.iloc[0, 0]].iloc[:, [0, 1, -2, -3, -7]]
         noStreamlitIndex()
         st.table(winner)
+
 
 if rad == "Similar Fights":
     searchBy = st.selectbox("Search By Fighter or Event", ["Fighter", "Event"])
@@ -72,3 +84,57 @@ if rad == "Similar Fights":
                 else:
                     st.table(similarFights(id, byTotals=True))
 
+
+if rad == "Fighter":
+    fighters = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\UFC_Fighters.csv", index_col=0)
+    fighterSelection = st.selectbox("Choose a Fighter", fighters)
+    noStreamlitIndex()
+    opponents = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
+    with st.form("MyForm"):
+        interest = st.selectbox("Choose what to look at", ["Fight History", "Fighter Totals"])
+
+        if interest == "Fight History":
+            spoiler4 = st.checkbox("Display Winner")
+            st.form_submit_button("Submit")
+            if spoiler4:
+                fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
+                win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
+                draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
+                nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
+                loss = len(fights) - win - draw - nc
+
+                record(win, loss, draw, nc, "UFC Record")
+
+                if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
+                    beltFight = fights[(fights["TitleFight"] == "Yes") | (fights["TitleFight"] == "Interim")]
+                    w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
+                    d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
+                    noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
+                    l = len(beltFight) - w - d - noContest
+
+                    record(w, l, d, noContest, "UFC Record in Championship Fights")
+
+                st.table(fights)
+            else:
+                fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
+                win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
+                draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
+                nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
+                loss = len(fights) - win - draw - nc
+
+                record(win, loss, draw, nc, "UFC Record")
+
+                if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
+                    beltFight = fights[(fights["TitleFight"] == "Yes") | (fights["TitleFight"] == "Interim")]
+                    w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
+                    d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
+                    noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
+                    l = len(beltFight) - w - d - noContest
+
+                    record(w, l, d, noContest, "UFC Record in Championship Fights")
+
+                st.table(fights[["EVENT", "BOUT", "WeightClass", "TitleFight"]])
+
+        elif interest == "Fighter Totals":
+            st.form_submit_button("Submit")
+            st.write("Work In Progress")
