@@ -122,6 +122,7 @@ def cleanup():
     df["FIGHTER_BLUE"] = df["FIGHTER_BLUE"].apply(lambda x: x.replace("'", ""))
     df["EVENT"] = df["EVENT"].apply(lambda x: x.replace("vs.", "vs"))
     df["BOUT"] = df["BOUT"].apply(lambda x: x.replace("'", ""))
+    df["WINNER"] = df["WINNER"].apply(lambda x: x.replace("'", ""))
 
     title_Fight = []
     div = []
@@ -130,7 +131,7 @@ def cleanup():
         titleFight = 'No'
         if ('UFC' in wt) and ('Interim' in wt) and ('Title' in wt):
             division = ufcINTERIMTitleDivisionSeperator(wt)
-            titleFight = 'Yes'
+            titleFight = 'Interim'
             div.append(division)
         elif ('UFC' in wt) and ('Title' in wt):
             division = ufcTitleDivisionSeperator(wt)
@@ -145,7 +146,7 @@ def cleanup():
             titleFight = 'Yes'
             div.append(division)
         title_Fight.append(titleFight)
-        if titleFight != 'Yes':
+        if (titleFight =="No"):
             div.append(wt)
 
     df["WeightClass"] = div
@@ -155,16 +156,14 @@ def cleanup():
     return df
 
 
-def fullyCompletedTotalsDataframe():
+def fullyCompletedTotalsDataframe(df):
     totals_df = df_by_totals()
     totals_df.insert(0, "EVENT", df["EVENT"])
     totals_df.insert(1, "BOUT", df["BOUT"])
-    totals_df.insert(2, "FIGHTER_RED", df["FIGHTER_RED"])
-    totals_df.insert(3, "FIGHTER_BLUE", df["FIGHTER_BLUE"])
-    totals_df.insert(26, "WIN_BY", df["WIN_BY"])
-    totals_df.insert(30, "WINNER", df["WINNER"])
-    totals_df.insert(31, "WeightClass", df["WeightClass"])
-    totals_df.insert(32, "TitleFight", df["TitleFight"])
+    totals_df.insert(24, "WIN_BY", df["WIN_BY"])
+    totals_df.insert(28, "WINNER", df["WINNER"])
+    totals_df.insert(29, "WeightClass", df["WeightClass"])
+    totals_df.insert(30, "TitleFight", df["TitleFight"])
     return totals_df
 
 
@@ -173,5 +172,5 @@ if __name__ == "__main__":
 
     allFighters(df)
 
-    totals_df = fullyCompletedTotalsDataframe()
+    totals_df = fullyCompletedTotalsDataframe(df)
     totals_df.to_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\FightTotals.csv", header=True)
