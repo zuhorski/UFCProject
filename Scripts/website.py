@@ -138,8 +138,20 @@ if rad == "Fighter":
                 st.table(fights[["EVENT", "BOUT", "WeightClass", "TitleFight"]])
 
         elif interest == "Fighter Totals":
-            stats = sideBySideStats(fighterSelection)
-            st.dataframe(stats)
+            # stats = sideBySideStats(fighterSelection)
+            # st.dataframe(stats)
+            titleFightChecker = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
+            if ('Yes' in list(titleFightChecker["TitleFight"])) | ('Interim' in list(titleFightChecker["TitleFight"])):
+                titlefightstats = st.selectbox("Stats for Title Fights", ["No", "Yes"])
+                if titlefightstats == 'Yes':
+                    stats = sideBySideStats(fighterSelection, True)
+                    st.dataframe(stats)
+                else:
+                    stats = sideBySideStats(fighterSelection)
+                    st.dataframe(stats)
+            else:
+                stats = sideBySideStats(fighterSelection)
+                st.dataframe(stats)
             statSelection = st.selectbox("Select a Stat", stats.columns.drop("Fight_Time_(Min)"))
             st.form_submit_button("Submit")
             fig = px.bar(stats, stats.index, statSelection)
