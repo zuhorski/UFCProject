@@ -1,6 +1,8 @@
 import pandas as pd
 import streamlit as st
 from similarity import similarFights
+from fighterStats import sideBySideStats
+import plotly.express as px
 
 
 def noStreamlitIndex():
@@ -136,5 +138,9 @@ if rad == "Fighter":
                 st.table(fights[["EVENT", "BOUT", "WeightClass", "TitleFight"]])
 
         elif interest == "Fighter Totals":
+            stats = sideBySideStats(fighterSelection)
+            st.dataframe(stats)
+            statSelection = st.selectbox("Select a Stat", stats.columns.drop("Fight_Time_(Min)"))
             st.form_submit_button("Submit")
-            st.write("Work In Progress")
+            fig = px.bar(stats, stats.index, statSelection)
+            st.plotly_chart(fig, use_container_width=True)
