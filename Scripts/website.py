@@ -59,11 +59,11 @@ if rad == "Similar Fights":
 
             if submit_button:
                 st.subheader("10 Most Similar Fights")
-                id = cleanDataDF[(cleanDataDF["EVENT"] == eventSelection) & (cleanDataDF["BOUT"] == boutSelection)].index[0]
+                index_id = cleanDataDF[(cleanDataDF["EVENT"] == eventSelection) & (cleanDataDF["BOUT"] == boutSelection)].index[0]
                 if spoiler2:
-                    st.table(similarFights(id, byTotals=True, includeWinner=True))
+                    st.table(similarFights(index_id, byTotals=True, includeWinner=True))
                 else:
-                    st.table(similarFights(id, byTotals=True))
+                    st.table(similarFights(index_id, byTotals=True))
 
     else:
         fighters = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\UFC_Fighters.csv", index_col=0)
@@ -79,80 +79,77 @@ if rad == "Similar Fights":
 
             if submit_button:
                 st.subheader("10 Most Similar Fights")
-                id = cleanDataDF[(cleanDataDF["EVENT"] == fightSelection[1]) & (cleanDataDF["BOUT"] == fightSelection[0])].index[0]
+                index_id = cleanDataDF[(cleanDataDF["EVENT"] == fightSelection[1]) & (cleanDataDF["BOUT"] == fightSelection[0])].index[0]
                 noStreamlitIndex()
                 if spoiler3:
-                    st.table(similarFights(id, byTotals=True, includeWinner=True))
+                    st.table(similarFights(index_id, byTotals=True, includeWinner=True))
                 else:
-                    st.table(similarFights(id, byTotals=True))
+                    st.table(similarFights(index_id, byTotals=True))
 
 
 if rad == "Fighter":
     fighters = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\UFC_Fighters.csv", index_col=0)
-    fighterSelection = st.selectbox("Choose a Fighter", fighters)
+    with st.form("MyForm"):
+        fighterSelection = st.selectbox("Choose a Fighter", fighters)
+        interest = st.selectbox("Choose what to look at", ["Fight History", "Fighter Totals"])
+        st.form_submit_button("Submit")
     noStreamlitIndex()
     opponents = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
-    with st.form("MyForm"):
-        interest = st.selectbox("Choose what to look at", ["Fight History", "Fighter Totals"])
 
-        if interest == "Fight History":
-            spoiler4 = st.checkbox("Display Winner")
-            st.form_submit_button("Submit")
-            if spoiler4:
-                fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
-                win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
-                draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
-                nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
-                loss = len(fights) - win - draw - nc
 
-                record(win, loss, draw, nc, "UFC Record")
 
-                if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
-                    beltFight = fights[(fights["TitleFight"] == "Yes") | (fights["TitleFight"] == "Interim")]
-                    w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
-                    d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
-                    noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
-                    l = len(beltFight) - w - d - noContest
+    if interest == "Fight History":
+        spoiler4 = st.checkbox("Display Winner")
+        if spoiler4:
+            fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
+            win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
+            draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
+            nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
+            loss = len(fights) - win - draw - nc
 
-                    record(w, l, d, noContest, "UFC Record in Championship Fights")
+            record(win, loss, draw, nc, "UFC Record")
 
-                st.table(fights)
-            else:
-                fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
-                win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
-                draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
-                nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
-                loss = len(fights) - win - draw - nc
+            if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
+                beltFight = fights[(fights["TitleFight"] == "Yes") | (fights["TitleFight"] == "Interim")]
+                w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
+                d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
+                noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
+                l = len(beltFight) - w - d - noContest
 
-                record(win, loss, draw, nc, "UFC Record")
+                record(w, l, d, noContest, "UFC Record in Championship Fights")
 
-                if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
-                    beltFight = fights[(fights["TitleFight"] == "Yes") | (fights["TitleFight"] == "Interim")]
-                    w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
-                    d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
-                    noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
-                    l = len(beltFight) - w - d - noContest
+            st.table(fights)
+        else:
+            fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
+            win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
+            draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
+            nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
+            loss = len(fights) - win - draw - nc
 
-                    record(w, l, d, noContest, "UFC Record in Championship Fights")
+            record(win, loss, draw, nc, "UFC Record")
 
-                st.table(fights[["EVENT", "BOUT", "WeightClass", "TitleFight"]])
+            if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
+                beltFight = fights[(fights["TitleFight"] == "Yes") | (fights["TitleFight"] == "Interim")]
+                w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
+                d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
+                noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
+                l = len(beltFight) - w - d - noContest
 
-        elif interest == "Fighter Totals":
-            # stats = sideBySideStats(fighterSelection)
-            # st.dataframe(stats)
-            titleFightChecker = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
-            if ('Yes' in list(titleFightChecker["TitleFight"])) | ('Interim' in list(titleFightChecker["TitleFight"])):
-                titlefightstats = st.selectbox("Stats for Title Fights", ["No", "Yes"])
-                if titlefightstats == 'Yes':
-                    stats = sideBySideStats(fighterSelection, True)
-                    st.dataframe(stats)
-                else:
-                    stats = sideBySideStats(fighterSelection)
-                    st.dataframe(stats)
+                record(w, l, d, noContest, "UFC Record in Championship Fights")
+
+            st.table(fights[["EVENT", "BOUT", "WeightClass", "TitleFight"]])
+
+    elif interest == "Fighter Totals":
+        titleFightChecker = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
+        if ('Yes' in list(titleFightChecker["TitleFight"])) | ('Interim' in list(titleFightChecker["TitleFight"])):
+            titlefightstats = st.selectbox("Stats for Title Fights", ["No", "Yes"])
+            if titlefightstats == 'Yes':
+                stats = sideBySideStats(fighterSelection, True)
             else:
                 stats = sideBySideStats(fighterSelection)
-                st.dataframe(stats)
-            statSelection = st.selectbox("Select a Stat", stats.columns.drop("Fight_Time_(Min)"))
-            st.form_submit_button("Submit")
-            fig = px.bar(stats, stats.index, statSelection)
-            st.plotly_chart(fig, use_container_width=True)
+        else:
+            stats = sideBySideStats(fighterSelection)
+        st.dataframe(stats)
+        statSelection = st.selectbox("Select a Stat", stats.columns.drop("Fight_Time_(Min)"))
+        fig = px.bar(stats, stats.index, statSelection)
+        st.plotly_chart(fig, use_container_width=True)
