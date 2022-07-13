@@ -139,7 +139,7 @@ def cleanup():
             div.append(division)
         elif ('Ultimate' in wt) and ('Fighter' in wt):
             division = ultimateFighterDivisionSeperator(wt)
-            titleFight = 'Yes'
+            titleFight = 'UF Title'
             div.append(division)
         elif 'Nations' in wt:
             division = tufDivisionSeperator(wt)
