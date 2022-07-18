@@ -1,11 +1,13 @@
 import pandas as pd
+import numpy as np
 import streamlit as st
 from similarity import similarFights
-from fighterStats import sideBySideStats
+from fighterStats import sideBySideStats, individualFightStats
 import plotly.express as px
 
 
 def noStreamlitIndex():
+    # No index shown in streamlit dataframes or tables
     hide_table_row_index = """
                         <style>
                         tbody th {display:none}
@@ -17,6 +19,7 @@ def noStreamlitIndex():
 
 
 def record(win, loss, draw, nc, text):
+    # Used to display the record of a fighter in streamlit
     if (draw == 0) & (nc == 0):
         st.write(f"{text}: {win}-{loss}")
     elif (draw != 0) & (nc == 0):
@@ -27,24 +30,25 @@ def record(win, loss, draw, nc, text):
         st.write(f"{text}: {win}-{loss} ({nc} NC)")
 
 
-cleanDataDF = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\CleanData.csv", index_col=0)
+cleanDataDF = pd.read_csv(
+    "C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\CleanData.csv", index_col=0)
 
+st.set_page_config(layout="wide")
 with st.sidebar:
-    rad = st.radio("Selection", ("Home", "Fighter", "Similar Fights"))
+    rad = st.radio("Selection", ("Home", "Fighter", "Similar Fights", "UFC"))
 
 if rad == "Home":
+    # Shows the fights on the most recent event
     st.title("Most Recent UFC Event", anchor="Home_Page")
-    spoiler1 = st.radio("Show the Winner?", options=["No", "Yes"])
+    spoiler1 = st.radio("Show the Winner?", options=["No", "Yes"])  # An option to see the winner or not
     if spoiler1 == "No":
         noWinner = cleanDataDF[cleanDataDF["EVENT"] == cleanDataDF.iloc[0, 0]].iloc[:, [0, 1, -2, ]]
         noStreamlitIndex()
         st.table(noWinner)
-
     else:
         winner = cleanDataDF[cleanDataDF["EVENT"] == cleanDataDF.iloc[0, 0]].iloc[:, [0, 1, -2, -3, -7]]
         noStreamlitIndex()
         st.table(winner)
-
 
 if rad == "Similar Fights":
     searchBy = st.selectbox("Search By Fighter or Event", ["Fighter", "Event"])
@@ -59,18 +63,21 @@ if rad == "Similar Fights":
 
             if submit_button:
                 st.subheader("10 Most Similar Fights")
-                index_id = cleanDataDF[(cleanDataDF["EVENT"] == eventSelection) & (cleanDataDF["BOUT"] == boutSelection)].index[0]
+                index_id = \
+                cleanDataDF[(cleanDataDF["EVENT"] == eventSelection) & (cleanDataDF["BOUT"] == boutSelection)].index[0]
                 if spoiler2:
                     st.table(similarFights(index_id, byTotals=True, includeWinner=True))
                 else:
                     st.table(similarFights(index_id, byTotals=True))
 
     else:
-        fighters = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\UFC_Fighters.csv", index_col=0)
+        fighters = pd.read_csv(
+            "C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\UFC_Fighters.csv",
+            index_col=0)
         fighterSelection = st.selectbox("Choose the Fighter", fighters)
         with st.form("MyForm"):
             bouts = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
-            event_bout =  bouts["BOUT"] + " --- " + bouts["EVENT"]
+            event_bout = bouts["BOUT"] + " --- " + bouts["EVENT"]
             fightSelection = st.selectbox("Choose the Fight", event_bout)
             fightSelection = fightSelection.split(" --- ")
 
@@ -79,24 +86,23 @@ if rad == "Similar Fights":
 
             if submit_button:
                 st.subheader("10 Most Similar Fights")
-                index_id = cleanDataDF[(cleanDataDF["EVENT"] == fightSelection[1]) & (cleanDataDF["BOUT"] == fightSelection[0])].index[0]
+                index_id = cleanDataDF[
+                    (cleanDataDF["EVENT"] == fightSelection[1]) & (cleanDataDF["BOUT"] == fightSelection[0])].index[0]
                 noStreamlitIndex()
                 if spoiler3:
                     st.table(similarFights(index_id, byTotals=True, includeWinner=True))
                 else:
                     st.table(similarFights(index_id, byTotals=True))
 
-
 if rad == "Fighter":
-    fighters = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\UFC_Fighters.csv", index_col=0)
+    fighters = pd.read_csv(
+        "C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\UFC_Fighters.csv", index_col=0)
     with st.form("MyForm"):
         fighterSelection = st.selectbox("Choose a Fighter", fighters)
         interest = st.selectbox("Choose what to look at", ["Fight History", "Fighter Totals"])
         st.form_submit_button("Submit")
     noStreamlitIndex()
     opponents = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
-
-
 
     if interest == "Fight History":
         spoiler4 = st.checkbox("Display Winner")
@@ -149,7 +155,77 @@ if rad == "Fighter":
                 stats = sideBySideStats(fighterSelection)
         else:
             stats = sideBySideStats(fighterSelection)
-        st.dataframe(stats)
+        st.dataframe(stats.style.format("{:2}"))
         statSelection = st.selectbox("Select a Stat", stats.columns.drop("Fight_Time_(Min)"))
         fig = px.bar(stats, stats.index, statSelection)
         st.plotly_chart(fig, use_container_width=True)
+
+if rad == "UFC":
+
+    with st.form("MyForm"):
+        min_fights = st.number_input("Choose the Minimum Amount of Fights (Average is 7)", min_value=1,
+            max_value=41, step=1)
+
+        opt = st.selectbox("Choose", options=["FIGHTER", "WeightClass"])
+        ufc = individualFightStats(cleanDataDF)
+
+        fightCount = ufc[opt].value_counts()
+        ufcSumStatsGrouped = (ufc.groupby(opt).sum())
+        for i in ufcSumStatsGrouped.columns[:-1]:
+            ufcSumStatsGrouped[i] = ((ufcSumStatsGrouped[i] / ufcSumStatsGrouped["Fight_Time_(Min)"])).__round__(2)
+
+        attributes = st.selectbox('Stat Selection',
+                                    options=["Total Strikes", "Head Strikes", "Body Strikes", "Leg Strikes",
+                                             "Standing Strikes", "Clinch Strikes", "Ground Strikes", "Takedowns"])
+
+
+        attDict = {"Total Strikes": ["TOTAL_STR_ATT", "TOTAL_STR_LAND"], "Head Strikes": ["HEAD_ATT", "HEAD_LAND"],
+                   "Body Strikes": ["BODY_ATT", "BODY_LAND"], "Leg Strikes": ["LEG_ATT", "LEG_LAND"],
+                   "Standing Strikes": ["STD_STR_ATT", "STD_STR_LAND"], "Clinch Strikes": ["CLINCH_STR_ATT", "CLINCH_STR_LAND"],
+                   "Ground Strikes": ['GRD_STR_ATT', 'GRD_STR_LAND'], "Takedowns": ["TD_ATT", "TD"]}
+        subButton = st.form_submit_button("Submit")
+
+    if subButton:
+        if opt == "FIGHTER":
+            attribute1, attribute2 = attDict[attributes]
+            ufcSumStatsGrouped = (ufcSumStatsGrouped[fightCount >= min_fights])
+            ufcSumStatsGrouped = pd.DataFrame(ufcSumStatsGrouped)
+            ufcSumStatsGrouped.insert(0, "FIGHTER", ufcSumStatsGrouped.index)
+            newind = [x for x in range(len(ufcSumStatsGrouped))]
+            ufcSumStatsGrouped.insert(0, "index", newind)
+            ufcSumStatsGrouped.set_index('index', inplace=True)
+            ave1 = (np.mean(ufcSumStatsGrouped[attribute1]))
+            ave2 = (np.mean(ufcSumStatsGrouped[attribute2]))
+
+
+            fig = px.scatter(ufcSumStatsGrouped, f"{attribute1}", f"{attribute2}", hover_data=["FIGHTER"],
+                             title=f'Ave {attribute1} vs Ave {attribute2} (Per Minute)',
+                             labels={f"{attribute1}": f'Ave {attribute1} per Minute',
+                                     f"{attribute2}": f'Ave {attribute2} per Minute'})
+            fig.add_hline(ave1)
+            fig.add_vline(ave2)
+
+            st.plotly_chart(fig, use_container_width=True)
+        if opt == "WeightClass":
+            ufcSumStatsGrouped = pd.DataFrame(ufcSumStatsGrouped)
+
+            weightclass = ["Flyweight Bout", "Bantamweight Bout", "Featherweight Bout", "Lightweight Bout",
+                           "Welterweight Bout", "Middleweight Bout",
+                           "Light Heavyweight Bout", "Heavyweight Bout", "Catch Weight Bout",
+                           "Women's Strawweight Bout", "Women's Flyweight Bout",
+                           "Women's Bantamweight Bout", "Women's Featherweight Bout"]
+
+            ufcSumStatsGrouped.insert(0, "WeightClass", ufcSumStatsGrouped.index)
+            ufcSumStatsGrouped["WeightClass"] = pd.Categorical(ufcSumStatsGrouped['WeightClass'], weightclass)
+
+            newind = list(range(len(ufcSumStatsGrouped)))
+            ufcSumStatsGrouped.insert(0, "index", newind)
+            ufcSumStatsGrouped.set_index('index', inplace=True)
+            ufcSumStatsGrouped.sort_values("WeightClass", inplace=True)
+            ufcSumStatsGrouped.reset_index(drop=True, inplace=True)
+            ave1 = (np.mean(ufcSumStatsGrouped[attribute1]))
+            ave2 = (np.mean(ufcSumStatsGrouped[attribute2]))
+
+            fig = px.line(ufcSumStatsGrouped, "WeightClass", f"{attribute1}")
+
+            st.plotly_chart(fig, use_container_width=True)
