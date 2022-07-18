@@ -313,6 +313,6 @@ for id in range(5, -1, -1): # 575 len(event_details_df.iloc[:576, :2])
             allfightsDF = pd.concat([singleRowCleanDF, allfightsDF]).reset_index(drop=True)
 
     filenum = len(os.listdir(fr"../Events2")) - 1
-    allfightsDF.to_csv(fr"C:\Users\sabzu\Documents\UFCRecommendationProject\Events2\MasterFightList_{filenum}.csv", header=True)
-    allfightsDF.to_csv(fr"C:\Users\sabzu\Documents\UFCRecommendationProject\DataFiles2\MasterFightList.csv", header=True)
+    allfightsDF.to_csv(fr"C:\Users\sabzu\Documents\UFCRecommendationProject\UFCProject\Events2\MasterFightList_{filenum}.csv", header=True)
+    allfightsDF.to_csv(fr"C:\Users\sabzu\Documents\UFCRecommendationProject\UFCProject\DataFiles2\MasterFightList.csv", header=True)
 
