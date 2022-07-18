@@ -162,11 +162,14 @@ if rad == "Fighter":
 
 if rad == "UFC":
 
-    with st.form("MyForm"):
+    opt = st.selectbox("Choose", options=["FIGHTER", "WeightClass"])
+    if opt == "FIGHTER":
+
+        # with st.form("MyForm"):
         min_fights = st.number_input("Choose the Minimum Amount of Fights (Average is 7)", min_value=1,
             max_value=41, step=1)
 
-        opt = st.selectbox("Choose", options=["FIGHTER", "WeightClass"])
+        # opt = st.selectbox("Choose", options=["FIGHTER", "WeightClass"])
         ufc = individualFightStats(cleanDataDF)
 
         fightCount = ufc[opt].value_counts()
@@ -183,49 +186,56 @@ if rad == "UFC":
                    "Body Strikes": ["BODY_ATT", "BODY_LAND"], "Leg Strikes": ["LEG_ATT", "LEG_LAND"],
                    "Standing Strikes": ["STD_STR_ATT", "STD_STR_LAND"], "Clinch Strikes": ["CLINCH_STR_ATT", "CLINCH_STR_LAND"],
                    "Ground Strikes": ['GRD_STR_ATT', 'GRD_STR_LAND'], "Takedowns": ["TD_ATT", "TD"]}
-        subButton = st.form_submit_button("Submit")
+            # subButton = st.form_submit_button("Submit")
 
-    if subButton:
-        if opt == "FIGHTER":
-            attribute1, attribute2 = attDict[attributes]
-            ufcSumStatsGrouped = (ufcSumStatsGrouped[fightCount >= min_fights])
-            ufcSumStatsGrouped = pd.DataFrame(ufcSumStatsGrouped)
-            ufcSumStatsGrouped.insert(0, "FIGHTER", ufcSumStatsGrouped.index)
-            newind = [x for x in range(len(ufcSumStatsGrouped))]
-            ufcSumStatsGrouped.insert(0, "index", newind)
-            ufcSumStatsGrouped.set_index('index', inplace=True)
-            ave1 = (np.mean(ufcSumStatsGrouped[attribute1]))
-            ave2 = (np.mean(ufcSumStatsGrouped[attribute2]))
+        # if subButton:
+        attribute1, attribute2 = attDict[attributes]
+        ufcSumStatsGrouped = (ufcSumStatsGrouped[fightCount >= min_fights])
+        ufcSumStatsGrouped = pd.DataFrame(ufcSumStatsGrouped)
+        ufcSumStatsGrouped.insert(0, "FIGHTER", ufcSumStatsGrouped.index)
+        newind = [x for x in range(len(ufcSumStatsGrouped))]
+        ufcSumStatsGrouped.insert(0, "index", newind)
+        ufcSumStatsGrouped.set_index('index', inplace=True)
+        ave1 = (np.mean(ufcSumStatsGrouped[attribute1]))
+        ave2 = (np.mean(ufcSumStatsGrouped[attribute2]))
 
 
-            fig = px.scatter(ufcSumStatsGrouped, f"{attribute1}", f"{attribute2}", hover_data=["FIGHTER"],
-                             title=f'Ave {attribute1} vs Ave {attribute2} (Per Minute)',
-                             labels={f"{attribute1}": f'Ave {attribute1} per Minute',
-                                     f"{attribute2}": f'Ave {attribute2} per Minute'})
-            fig.add_hline(ave1)
-            fig.add_vline(ave2)
+        fig = px.scatter(ufcSumStatsGrouped, f"{attribute1}", f"{attribute2}", hover_data=["FIGHTER"],
+                         title=f'Ave {attribute1} vs Ave {attribute2} (Per Minute)',
+                         labels={f"{attribute1}": f'Ave {attribute1} per Minute',
+                                 f"{attribute2}": f'Ave {attribute2} per Minute'})
+        fig.add_hline(ave1)
+        fig.add_vline(ave2)
 
-            st.plotly_chart(fig, use_container_width=True)
-        if opt == "WeightClass":
-            ufcSumStatsGrouped = pd.DataFrame(ufcSumStatsGrouped)
+        st.plotly_chart(fig, use_container_width=True)
 
-            weightclass = ["Flyweight Bout", "Bantamweight Bout", "Featherweight Bout", "Lightweight Bout",
-                           "Welterweight Bout", "Middleweight Bout",
-                           "Light Heavyweight Bout", "Heavyweight Bout", "Catch Weight Bout",
-                           "Women's Strawweight Bout", "Women's Flyweight Bout",
-                           "Women's Bantamweight Bout", "Women's Featherweight Bout"]
+    if opt == "WeightClass":
+        ufc = individualFightStats(cleanDataDF)
+        fightCount = ufc["WeightClass"].value_counts()
+        ufcSumStatsGrouped = (ufc.groupby("WeightClass").mean())
+        for i in ufcSumStatsGrouped.columns[:-2]:
+            ufcSumStatsGrouped[i] = ((ufcSumStatsGrouped[i] / ufcSumStatsGrouped["Fight_Time_(Min)"])).__round__(2)
 
-            ufcSumStatsGrouped.insert(0, "WeightClass", ufcSumStatsGrouped.index)
-            ufcSumStatsGrouped["WeightClass"] = pd.Categorical(ufcSumStatsGrouped['WeightClass'], weightclass)
+        attributes = st.selectbox(label='Select Stat',options=ufcSumStatsGrouped.columns[:-1])
 
-            newind = list(range(len(ufcSumStatsGrouped)))
-            ufcSumStatsGrouped.insert(0, "index", newind)
-            ufcSumStatsGrouped.set_index('index', inplace=True)
-            ufcSumStatsGrouped.sort_values("WeightClass", inplace=True)
-            ufcSumStatsGrouped.reset_index(drop=True, inplace=True)
-            ave1 = (np.mean(ufcSumStatsGrouped[attribute1]))
-            ave2 = (np.mean(ufcSumStatsGrouped[attribute2]))
+        ufcSumStatsGrouped = pd.DataFrame(ufcSumStatsGrouped)
 
-            fig = px.line(ufcSumStatsGrouped, "WeightClass", f"{attribute1}")
+        weightclass = ["Flyweight Bout", "Bantamweight Bout", "Featherweight Bout", "Lightweight Bout",
+                       "Welterweight Bout", "Middleweight Bout",
+                       "Light Heavyweight Bout", "Heavyweight Bout", "Catch Weight Bout", "Women's Strawweight Bout",
+                       "Women's Flyweight Bout",
+                       "Women's Bantamweight Bout", "Women's Featherweight Bout"]
 
-            st.plotly_chart(fig, use_container_width=True)
+        ufcSumStatsGrouped.insert(0, "WeightClass", ufcSumStatsGrouped.index)
+        ufcSumStatsGrouped["WeightClass"] = pd.Categorical(ufcSumStatsGrouped['WeightClass'], weightclass)
+
+        newind = list(range(len(ufcSumStatsGrouped)))
+        ufcSumStatsGrouped.insert(0, "index", newind)
+        ufcSumStatsGrouped.set_index('index', inplace=True)
+        ufcSumStatsGrouped.sort_values("WeightClass", inplace=True)
+        ufcSumStatsGrouped.reset_index(drop=True, inplace=True)
+        ave1 = (np.mean(ufcSumStatsGrouped[attributes]))
+
+        fig = px.bar(ufcSumStatsGrouped, "WeightClass", f"{attributes}", labels={f"{attributes}": f'Ave {attributes} per Minute'})
+        fig.add_hline(y=ave1)
+        st.plotly_chart(fig, use_container_width=True)
