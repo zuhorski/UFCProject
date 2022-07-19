@@ -4,6 +4,7 @@ from sklearn.metrics.pairwise import euclidean_distances
 from sklearn import preprocessing
 from collections import defaultdict
 
+
 def similarFights(fight_num, includeWinner=False, byTotals=False):
     df = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\CleanData.csv", index_col=0)
     if not byTotals:
@@ -111,6 +112,5 @@ if __name__ == "__main__":
     print(similarFights(119, byTotals=True))
     print(similarFights(119))
     # similarityAnalysis(119)
-
 
 
