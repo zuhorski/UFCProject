@@ -64,7 +64,8 @@ if rad == "Similar Fights":
             if submit_button:
                 st.subheader("10 Most Similar Fights")
                 index_id = \
-                cleanDataDF[(cleanDataDF["EVENT"] == eventSelection) & (cleanDataDF["BOUT"] == boutSelection)].index[0]
+                    cleanDataDF[
+                        (cleanDataDF["EVENT"] == eventSelection) & (cleanDataDF["BOUT"] == boutSelection)].index[0]
                 if spoiler2:
                     st.table(similarFights(index_id, byTotals=True, includeWinner=True))
                 else:
@@ -150,10 +151,30 @@ if rad == "Fighter":
         if ('Yes' in list(titleFightChecker["TitleFight"])) | ('Interim' in list(titleFightChecker["TitleFight"])):
             titlefightstats = st.selectbox("Stats for Title Fights", ["No", "Yes"])
             if titlefightstats == 'Yes':
+                fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
+                if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
+                    beltFight = fights[(fights["TitleFight"] == "Yes") | (fights["TitleFight"] == "Interim")]
+                    w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
+                    d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
+                    noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
+                    l = len(beltFight) - w - d - noContest
+                    record(w, l, d, noContest, "UFC Record in Championship Fights")
                 stats = sideBySideStats(fighterSelection, True)
             else:
+                fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
+                win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
+                draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
+                nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
+                loss = len(fights) - win - draw - nc
+                record(win, loss, draw, nc, "UFC Record")
                 stats = sideBySideStats(fighterSelection)
         else:
+            fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
+            win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
+            draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
+            nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
+            loss = len(fights) - win - draw - nc
+            record(win, loss, draw, nc, "UFC Record")
             stats = sideBySideStats(fighterSelection)
         st.dataframe(stats.style.format("{:2}"))
         statSelection = st.selectbox("Select a Stat", stats.columns.drop("Fight_Time_(Min)"))
@@ -163,47 +184,53 @@ if rad == "Fighter":
 if rad == "UFC":
 
     opt = st.selectbox("Choose", options=["FIGHTER", "WeightClass"])
+
     if opt == "FIGHTER":
 
-        # with st.form("MyForm"):
         min_fights = st.number_input("Choose the Minimum Amount of Fights (Average is 7)", min_value=1,
-            max_value=41, step=1)
+                                     max_value=41, step=1)
 
-        # opt = st.selectbox("Choose", options=["FIGHTER", "WeightClass"])
         ufc = individualFightStats(cleanDataDF)
 
         fightCount = ufc[opt].value_counts()
         ufcSumStatsGrouped = (ufc.groupby(opt).sum())
+
         for i in ufcSumStatsGrouped.columns[:-1]:
-            ufcSumStatsGrouped[i] = ((ufcSumStatsGrouped[i] / ufcSumStatsGrouped["Fight_Time_(Min)"])).__round__(2)
+            ufcSumStatsGrouped[i] = (ufcSumStatsGrouped[i] / ufcSumStatsGrouped["Fight_Time_(Min)"]).__round__(2)
 
         attributes = st.selectbox('Stat Selection',
-                                    options=["Total Strikes", "Head Strikes", "Body Strikes", "Leg Strikes",
-                                             "Standing Strikes", "Clinch Strikes", "Ground Strikes", "Takedowns"])
-
+                                  options=["Total Strikes", "Head Strikes", "Body Strikes", "Leg Strikes",
+                                           "Standing Strikes", "Clinch Strikes", "Ground Strikes", "Takedowns"])
 
         attDict = {"Total Strikes": ["TOTAL_STR_ATT", "TOTAL_STR_LAND"], "Head Strikes": ["HEAD_ATT", "HEAD_LAND"],
                    "Body Strikes": ["BODY_ATT", "BODY_LAND"], "Leg Strikes": ["LEG_ATT", "LEG_LAND"],
-                   "Standing Strikes": ["STD_STR_ATT", "STD_STR_LAND"], "Clinch Strikes": ["CLINCH_STR_ATT", "CLINCH_STR_LAND"],
+                   "Standing Strikes": ["STD_STR_ATT", "STD_STR_LAND"],
+                   "Clinch Strikes": ["CLINCH_STR_ATT", "CLINCH_STR_LAND"],
                    "Ground Strikes": ['GRD_STR_ATT', 'GRD_STR_LAND'], "Takedowns": ["TD_ATT", "TD"]}
-            # subButton = st.form_submit_button("Submit")
 
-        # if subButton:
         attribute1, attribute2 = attDict[attributes]
         ufcSumStatsGrouped = (ufcSumStatsGrouped[fightCount >= min_fights])
         ufcSumStatsGrouped = pd.DataFrame(ufcSumStatsGrouped)
         ufcSumStatsGrouped.insert(0, "FIGHTER", ufcSumStatsGrouped.index)
-        newind = [x for x in range(len(ufcSumStatsGrouped))]
+        newind = list(range(len(ufcSumStatsGrouped)))
         ufcSumStatsGrouped.insert(0, "index", newind)
         ufcSumStatsGrouped.set_index('index', inplace=True)
         ave1 = (np.mean(ufcSumStatsGrouped[attribute1]))
         ave2 = (np.mean(ufcSumStatsGrouped[attribute2]))
 
+        name_labels = st.checkbox("Show Points With Name Labels")
+        if not name_labels:
+            fig = px.scatter(ufcSumStatsGrouped, f"{attribute1}", f"{attribute2}", hover_data=["FIGHTER"],
+                             title=f'Ave {attribute1} vs Ave {attribute2} (Per Minute)',
+                             labels={f"{attribute1}": f'Ave {attribute1} per Minute',
+                                     f"{attribute2}": f'Ave {attribute2} per Minute'})
+        else:
+            fig = px.scatter(ufcSumStatsGrouped, f"{attribute1}", f"{attribute2}", text="FIGHTER",
+                             title=f'Ave {attribute1} vs Ave {attribute2} (Per Minute)',
+                             labels={f"{attribute1}": f'Ave {attribute1} per Minute',
+                                     f"{attribute2}": f'Ave {attribute2} per Minute'})
+            fig.update_traces(textposition="top center")
 
-        fig = px.scatter(ufcSumStatsGrouped, f"{attribute1}", f"{attribute2}", hover_data=["FIGHTER"],
-                         title=f'Ave {attribute1} vs Ave {attribute2} (Per Minute)',
-                         labels={f"{attribute1}": f'Ave {attribute1} per Minute',
-                                 f"{attribute2}": f'Ave {attribute2} per Minute'})
         fig.add_hline(ave1)
         fig.add_vline(ave2)
 
@@ -216,7 +243,7 @@ if rad == "UFC":
         for i in ufcSumStatsGrouped.columns[:-2]:
             ufcSumStatsGrouped[i] = ((ufcSumStatsGrouped[i] / ufcSumStatsGrouped["Fight_Time_(Min)"])).__round__(2)
 
-        attributes = st.selectbox(label='Select Stat',options=ufcSumStatsGrouped.columns[:-1])
+        attributes = st.selectbox(label='Select Stat', options=ufcSumStatsGrouped.columns[:-1])
 
         ufcSumStatsGrouped = pd.DataFrame(ufcSumStatsGrouped)
 
@@ -236,6 +263,7 @@ if rad == "UFC":
         ufcSumStatsGrouped.reset_index(drop=True, inplace=True)
         ave1 = (np.mean(ufcSumStatsGrouped[attributes]))
 
-        fig = px.bar(ufcSumStatsGrouped, "WeightClass", f"{attributes}", labels={f"{attributes}": f'Ave {attributes} per Minute'})
+        fig = px.bar(ufcSumStatsGrouped, "WeightClass", f"{attributes}",
+                     labels={f"{attributes}": f'Ave {attributes} per Minute'})
         fig.add_hline(y=ave1)
         st.plotly_chart(fig, use_container_width=True)
