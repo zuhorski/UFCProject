@@ -98,51 +98,86 @@ if rad == "Similar Fights":
 if rad == "Fighter":
     fighters = pd.read_csv(
         "C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\UFC_Fighters.csv", index_col=0)
+
     with st.form("MyForm"):
+        # Choose a fighter
         fighterSelection = st.selectbox("Choose a Fighter", fighters)
+
+        # Choose to look at fight history or fight totals
         interest = st.selectbox("Choose what to look at", ["Fight History", "Fighter Totals"])
         st.form_submit_button("Submit")
     noStreamlitIndex()
+
+    # Get all the bouts that contain the selected fighter
     opponents = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
 
     if interest == "Fight History":
+        # Spoiler prevention - check the box to see the winner
         spoiler4 = st.checkbox("Display Winner")
-        if spoiler4:
-            fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
+
+        fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
+        if spoiler4:  # if the box is checked
+            finishes = opponents[((opponents["WIN_BY"].str.contains("KO/TKO")) |
+                                  (opponents["WIN_BY"].str.contains("Submission"))) &
+                                 (opponents["WINNER"].str.contains(fighterSelection))]["WIN_BY"].count()
             win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
             draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
             nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
             loss = len(fights) - win - draw - nc
 
+            # Display UFC Record
             record(win, loss, draw, nc, "UFC Record")
+            # Display Finish Percent
+            st.write(f"Finish Percent: {((finishes / len(opponents)) * 100).__round__(2)}%")
 
+            # If the fighter has fought for the Title, display record and finish percent
             if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
                 beltFight = fights[(fights["TitleFight"] == "Yes") | (fights["TitleFight"] == "Interim")]
+                title_finishes = beltFight[((beltFight["WIN_BY"].str.contains("KO/TKO")) |
+                                            (beltFight["WIN_BY"].str.contains("Submission"))) &
+                                           (beltFight["WINNER"].str.contains(fighterSelection))]["WIN_BY"].count()
+
                 w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
                 d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
                 noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
                 l = len(beltFight) - w - d - noContest
 
-                record(w, l, d, noContest, "UFC Record in Championship Fights")
+                # Display UFC Title Fight Record
+                record(w, l, d, noContest, "UFC Record in Title Fights")
+                # Display Title Fight Finish Percent
+                st.write(f"Title Fight Finish Percent: {((title_finishes / len(beltFight)) * 100).__round__(2)}%")
 
             st.table(fights)
+
         else:
-            fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
+            finishes = opponents[((opponents["WIN_BY"].str.contains("KO/TKO")) |
+                                  (opponents["WIN_BY"].str.contains("Submission"))) &
+                                 (opponents["WINNER"].str.contains(fighterSelection))]["WIN_BY"].count()
             win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
             draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
             nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
             loss = len(fights) - win - draw - nc
 
+            # Display UFC Record
             record(win, loss, draw, nc, "UFC Record")
+            # Display Finish Percent
+            st.write(f"Finish Percent: {((finishes / len(opponents)) * 100).__round__(2)}%")
 
+            # If the fighter has fought for the Title, display record and finish percent
             if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
                 beltFight = fights[(fights["TitleFight"] == "Yes") | (fights["TitleFight"] == "Interim")]
+                title_finishes = beltFight[((beltFight["WIN_BY"].str.contains("KO/TKO")) |
+                                            (beltFight["WIN_BY"].str.contains("Submission"))) &
+                                           (beltFight["WINNER"].str.contains(fighterSelection))]["WIN_BY"].count()
                 w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
                 d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
                 noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
                 l = len(beltFight) - w - d - noContest
 
-                record(w, l, d, noContest, "UFC Record in Championship Fights")
+                # Display UFC Title Fight Record
+                record(w, l, d, noContest, "UFC Record in Title Fights")
+                # Display Title Fight Finish Percent
+                st.write(f"Title Fight Finish Percent: {((title_finishes / len(beltFight)) * 100).__round__(2)}%")
 
             st.table(fights[["EVENT", "BOUT", "WeightClass", "TitleFight"]])
 
@@ -150,8 +185,8 @@ if rad == "Fighter":
         titleFightChecker = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
         if ('Yes' in list(titleFightChecker["TitleFight"])) | ('Interim' in list(titleFightChecker["TitleFight"])):
             titlefightstats = st.selectbox("Stats for Title Fights", ["No", "Yes"])
+            fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
             if titlefightstats == 'Yes':
-                fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
                 if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
                     beltFight = fights[(fights["TitleFight"] == "Yes") | (fights["TitleFight"] == "Interim")]
                     w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
@@ -161,7 +196,6 @@ if rad == "Fighter":
                     record(w, l, d, noContest, "UFC Record in Championship Fights")
                 stats = sideBySideStats(fighterSelection, True)
             else:
-                fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
                 win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
                 draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
                 nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
@@ -183,7 +217,7 @@ if rad == "Fighter":
 
 if rad == "UFC":
 
-    opt = st.selectbox("Choose", options=["FIGHTER", "WeightClass"])
+    opt = st.selectbox("Category", options=["FIGHTER", "WeightClass", 'Title Fights'])
 
     if opt == "FIGHTER":
 
@@ -240,7 +274,7 @@ if rad == "UFC":
         ufc = individualFightStats(cleanDataDF)
         fightCount = ufc["WeightClass"].value_counts()
         ufcSumStatsGrouped = (ufc.groupby("WeightClass").mean())
-        for i in ufcSumStatsGrouped.columns[:-2]:
+        for i in ufcSumStatsGrouped.columns[:-1]:
             ufcSumStatsGrouped[i] = ((ufcSumStatsGrouped[i] / ufcSumStatsGrouped["Fight_Time_(Min)"])).__round__(2)
 
         attributes = st.selectbox(label='Select Stat', options=ufcSumStatsGrouped.columns[:-1])
@@ -267,3 +301,6 @@ if rad == "UFC":
                      labels={f"{attributes}": f'Ave {attributes} per Minute'})
         fig.add_hline(y=ave1)
         st.plotly_chart(fig, use_container_width=True)
+
+    if opt == "Title Fights":
+        st.write("Coming Soon")
