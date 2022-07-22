@@ -184,9 +184,9 @@ if rad == "Fighter":
     elif interest == "Fighter Totals":
         titleFightChecker = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
         if ('Yes' in list(titleFightChecker["TitleFight"])) | ('Interim' in list(titleFightChecker["TitleFight"])):
-            titlefightstats = st.selectbox("Stats for Title Fights", ["No", "Yes"])
+            titlefightstats = st.checkbox("Display Stats for Title Fights")
             fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
-            if titlefightstats == 'Yes':
+            if titlefightstats:
                 if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
                     beltFight = fights[(fights["TitleFight"] == "Yes") | (fights["TitleFight"] == "Interim")]
                     w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
@@ -194,14 +194,22 @@ if rad == "Fighter":
                     noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
                     l = len(beltFight) - w - d - noContest
                     record(w, l, d, noContest, "UFC Record in Championship Fights")
-                stats = sideBySideStats(fighterSelection, True)
+                statMetric = st.selectbox("Choose to view by Fighter Total or Average", ["Totals", "Average"])
+                if statMetric == "Totals":
+                    stats = sideBySideStats(fighterSelection, 'sum')
+                else:
+                    stats = sideBySideStats(fighterSelection, 'mean')
             else:
                 win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
                 draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
                 nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
                 loss = len(fights) - win - draw - nc
                 record(win, loss, draw, nc, "UFC Record")
-                stats = sideBySideStats(fighterSelection)
+                statMetric = st.selectbox("Choose to view by Fighter Total or Average", ["Totals", "Average"])
+                if statMetric == "Totals":
+                    stats = sideBySideStats(fighterSelection, 'sum')
+                else:
+                    stats = sideBySideStats(fighterSelection, 'mean')
         else:
             fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
             win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
@@ -209,7 +217,11 @@ if rad == "Fighter":
             nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
             loss = len(fights) - win - draw - nc
             record(win, loss, draw, nc, "UFC Record")
-            stats = sideBySideStats(fighterSelection)
+            statMetric = st.selectbox("Choose to view by Fighter Total or Average", ["Totals", "Average"])
+            if statMetric == "Totals":
+                stats = sideBySideStats(fighterSelection, 'sum')
+            else:
+                stats = sideBySideStats(fighterSelection, 'mean')
         st.dataframe(stats.style.format("{:2}"))
         statSelection = st.selectbox("Select a Stat", stats.columns.drop("Fight_Time_(Min)"))
         fig = px.bar(stats, stats.index, statSelection)
