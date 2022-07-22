@@ -19,15 +19,14 @@ def noStreamlitIndex():
 
 
 def record(win, loss, draw, nc, text):
-    # Used to display the record of a fighter in streamlit
-    if (draw == 0) & (nc == 0):
-        st.write(f"{text}: {win}-{loss}")
-    elif (draw != 0) & (nc == 0):
-        st.write(f"{text}: {win}-{loss}-{draw}")
-    elif (draw != 0) & (nc != 0):
-        st.write(f"{text}: {win}-{loss}-{draw} ({nc} NC)")
-    elif (draw == 0) & (nc != 0):
-        st.write(f"{text}: {win}-{loss} ({nc} NC)")
+    st.write(text)
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Win", win)
+    col2.metric("Loss", loss)
+    col3.metric("Draw", draw)
+    col4.metric("No Contest", nc)
+
+
 
 
 cleanDataDF = pd.read_csv(
@@ -128,7 +127,8 @@ if rad == "Fighter":
             # Display UFC Record
             record(win, loss, draw, nc, "UFC Record")
             # Display Finish Percent
-            st.write(f"Finish Percent: {((finishes / len(opponents)) * 100).__round__(2)}%")
+            st.metric("Finish Percent", f"{str(((finishes / len(opponents)) * 100).__round__(2))}%")
+
 
             # If the fighter has fought for the Title, display record and finish percent
             if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
@@ -145,7 +145,7 @@ if rad == "Fighter":
                 # Display UFC Title Fight Record
                 record(w, l, d, noContest, "UFC Record in Title Fights")
                 # Display Title Fight Finish Percent
-                st.write(f"Title Fight Finish Percent: {((title_finishes / len(beltFight)) * 100).__round__(2)}%")
+                st.metric("Title Fight Finish Percent", f"{str(((title_finishes / len(beltFight)) * 100).__round__(2))}%")
 
             st.table(fights)
 
@@ -161,7 +161,7 @@ if rad == "Fighter":
             # Display UFC Record
             record(win, loss, draw, nc, "UFC Record")
             # Display Finish Percent
-            st.write(f"Finish Percent: {((finishes / len(opponents)) * 100).__round__(2)}%")
+            st.metric("Finish Percent", f"{str(((finishes / len(opponents)) * 100).__round__(2))}%")
 
             # If the fighter has fought for the Title, display record and finish percent
             if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
@@ -177,7 +177,7 @@ if rad == "Fighter":
                 # Display UFC Title Fight Record
                 record(w, l, d, noContest, "UFC Record in Title Fights")
                 # Display Title Fight Finish Percent
-                st.write(f"Title Fight Finish Percent: {((title_finishes / len(beltFight)) * 100).__round__(2)}%")
+                st.metric("Title Fight Finish Percent", f"{str(((title_finishes / len(beltFight)) * 100).__round__(2))}%")
 
             st.table(fights[["EVENT", "BOUT", "WeightClass", "TitleFight"]])
 
