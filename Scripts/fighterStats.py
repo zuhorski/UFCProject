@@ -41,9 +41,13 @@ def opponentStats(fighter, title=False):
     return pd.concat([redDF, blueDF]).sort_index()
 
 
-def sideBySideStats(fighter, title=False):
-    f = pd.DataFrame(fighterStats(fighter, title).iloc[:, 1:].sum())
-    o = pd.DataFrame(opponentStats(fighter, title).iloc[:, 1:].sum())
+def sideBySideStats(fighter, metric, title=False):
+    if metric == "sum":
+        f = pd.DataFrame(fighterStats(fighter, title).iloc[:, 1:].sum())
+        o = pd.DataFrame(opponentStats(fighter, title).iloc[:, 1:].sum())
+    else:
+        f = pd.DataFrame(fighterStats(fighter, title).iloc[:, 1:].mean().round(2))
+        o = pd.DataFrame(opponentStats(fighter, title).iloc[:, 1:].mean().round(2))
     combo = pd.merge(f, o, on=f.index)
     combo.rename(columns={'key_0': 'Fighter', '0_x': f'{fighter}', '0_y': 'Opponents'}, inplace=True)
     combo.set_index("Fighter", inplace=True)
@@ -54,12 +58,12 @@ def sideBySideStats(fighter, title=False):
 def individualFightStats(df):
     redDF = df.filter(regex='RED$', axis=1)
     redDF.insert(22, "CONTROL_TIME", df['CTRL_TIME_RED(sec)'])
-    redDF["CONTROL_TIME"] = (df['CTRL_TIME_RED(sec)'] / 60).__round__(2)
+    redDF["CONTROL_TIME"] = (df['CTRL_TIME_RED(sec)']).__round__(2)
     redDF["Fight_Time_(Min)"] = (df["Fight_Time_(sec)"] / 60).__round__(2)
     redDF["WeightClass"] = df["WeightClass"]
     blueDF = df.filter(regex='BLUE$', axis=1)
     blueDF.insert(22, "CONTROL_TIME", df['CTRL_TIME-BLUE(sec)'])
-    blueDF["CONTROL_TIME"] = (df['CTRL_TIME-BLUE(sec)'] / 60).__round__(2)
+    blueDF["CONTROL_TIME"] = (df['CTRL_TIME-BLUE(sec)']).__round__(2)
     blueDF["Fight_Time_(Min)"] = (df["Fight_Time_(sec)"] / 60).__round__(2)
     blueDF["WeightClass"] = df["WeightClass"]
     redDF.columns = redDF.columns.str.replace('_RED', '')
@@ -72,12 +76,12 @@ if __name__ == "__main__":
 
     df = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\CleanData.csv",
                      index_col=0)
-    #
+
     # ufc = individualFightStats(df)
     #
     # fightCount = ufc["WeightClass"].value_counts()
     # ufcSumStatsGrouped = (ufc.groupby("WeightClass").mean())
-    # for i in ufcSumStatsGrouped.columns[:-2]:
+    # for i in ufcSumStatsGrouped.columns[:-1]:
     #     ufcSumStatsGrouped[i] = ((ufcSumStatsGrouped[i] / ufcSumStatsGrouped["Fight_Time_(Min)"])).__round__(2)
     #
     # attributes = "CONTROL_TIME"
