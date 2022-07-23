@@ -19,7 +19,7 @@ def noStreamlitIndex():
 
 
 def record(win, loss, draw, nc, text):
-    st.write(text)
+    st.subheader(text)
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Win", win)
     col2.metric("Loss", loss)
@@ -119,6 +119,7 @@ if rad == "Fighter":
             finishes = opponents[((opponents["WIN_BY"].str.contains("KO/TKO")) |
                                   (opponents["WIN_BY"].str.contains("Submission"))) &
                                  (opponents["WINNER"].str.contains(fighterSelection))]["WIN_BY"].count()
+
             win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
             draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
             nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
@@ -182,9 +183,11 @@ if rad == "Fighter":
             st.table(fights[["EVENT", "BOUT", "WeightClass", "TitleFight"]])
 
     elif interest == "Fighter Totals":
+        container = st.container()
+        col1, col2, col3 = container.columns(3)
         titleFightChecker = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
         if ('Yes' in list(titleFightChecker["TitleFight"])) | ('Interim' in list(titleFightChecker["TitleFight"])):
-            titlefightstats = st.checkbox("Display Stats for Title Fights")
+            titlefightstats = col1.checkbox("Display Stats for Title Fights")
             fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
             if titlefightstats:
                 if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
@@ -207,8 +210,8 @@ if rad == "Fighter":
             nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
             loss = len(fights) - win - draw - nc
             record(win, loss, draw, nc, "UFC Record")
-            
-        statMetric = st.selectbox("Choose how to view by fighter stats",
+
+        statMetric = col2.selectbox("Choose how to view by fighter stats",
                                   ["Totals", "Average", "Per Minute"])
         if statMetric == "Totals":
             stats = sideBySideStats(fighterSelection, 'sum')
@@ -217,7 +220,7 @@ if rad == "Fighter":
         else:
             stats = sideBySideStats(fighterSelection, "Per Minute")
         st.dataframe(stats.style.format("{:2}"))
-        statSelection = st.selectbox("Select a Stat", stats.columns.drop("Fight_Time_(Min)"))
+        statSelection = col3.selectbox("Select a Stat", stats.columns.drop("Fight_Time_(Min)"))
         fig = px.bar(stats, stats.index, statSelection)
         st.plotly_chart(fig, use_container_width=True)
 
