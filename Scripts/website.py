@@ -18,17 +18,30 @@ def noStreamlitIndex():
     st.markdown(hide_table_row_index, unsafe_allow_html=True)
 
 
+@st.cache
+def mostRecentEventDataframe(showWinner=False):
+    if showWinner:
+        return cleanDataDF[cleanDataDF["EVENT"] == cleanDataDF.iloc[0, 0]].iloc[:, [0, 1, -2, -3, -7]]
+    else:
+        return cleanDataDF[cleanDataDF["EVENT"] == cleanDataDF.iloc[0, 0]].iloc[:, [0, 1, -2, ]]
+
+
+# @st.cache(suppress_st_warning=True)
 def record(win, loss, draw, nc, text):
     st.subheader(text)
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Win", win)
-    col2.metric("Loss", loss)
-    col3.metric("Draw", draw)
-    col4.metric("No Contest", nc)
+    col_1, col_2, col_3, col_4 = st.columns(4)
+    col_1.metric("Win", win)
+    col_2.metric("Loss", loss)
+    col_3.metric("Draw", draw)
+    col_4.metric("No Contest", nc)
 
 
+def fighterGraph(x, y, stat):
+    fig = px.bar(x, y, stat)
+    st.plotly_chart(fig, use_container_width=True)
 
 
+# sourcery no-metrics
 cleanDataDF = pd.read_csv(
     "C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\CleanData.csv", index_col=0)
 
@@ -40,12 +53,13 @@ if rad == "Home":
     # Shows the fights on the most recent event
     st.title("Most Recent UFC Event", anchor="Home_Page")
     spoiler1 = st.radio("Show the Winner?", options=["No", "Yes"])  # An option to see the winner or not
+
     if spoiler1 == "No":
-        noWinner = cleanDataDF[cleanDataDF["EVENT"] == cleanDataDF.iloc[0, 0]].iloc[:, [0, 1, -2, ]]
+        noWinner = mostRecentEventDataframe()
         noStreamlitIndex()
         st.table(noWinner)
     else:
-        winner = cleanDataDF[cleanDataDF["EVENT"] == cleanDataDF.iloc[0, 0]].iloc[:, [0, 1, -2, -3, -7]]
+        winner = mostRecentEventDataframe(True)
         noStreamlitIndex()
         st.table(winner)
 
@@ -95,8 +109,7 @@ if rad == "Similar Fights":
                     st.table(similarFights(index_id, byTotals=True))
 
 if rad == "Fighter":
-    fighters = pd.read_csv(
-        "C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\UFC_Fighters.csv", index_col=0)
+    fighters = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\UFC_Fighters.csv", index_col=0)
 
     with st.form("MyForm"):
         # Choose a fighter
@@ -129,7 +142,6 @@ if rad == "Fighter":
             record(win, loss, draw, nc, "UFC Record")
             # Display Finish Percent
             st.metric("Finish Percent", f"{str(((finishes / len(opponents)) * 100).__round__(2))}%")
-
 
             # If the fighter has fought for the Title, display record and finish percent
             if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
@@ -185,9 +197,11 @@ if rad == "Fighter":
     elif interest == "Fighter Totals":
         container = st.container()
         col1, col2, col3 = container.columns(3)
+        statMetric = col1.selectbox("Choose how to view fighter stats",
+                                    ["Totals", "Average", "Per Minute"])
         titleFightChecker = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
         if ('Yes' in list(titleFightChecker["TitleFight"])) | ('Interim' in list(titleFightChecker["TitleFight"])):
-            titlefightstats = col1.checkbox("Display Stats for Title Fights")
+            titlefightstats = col3.checkbox("Display Stats for Title Fights")
             fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
             if titlefightstats:
                 if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
@@ -197,12 +211,26 @@ if rad == "Fighter":
                     noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
                     l = len(beltFight) - w - d - noContest
                     record(w, l, d, noContest, "UFC Record in Championship Fights")
+
+                    if statMetric == "Totals":
+                        stats = sideBySideStats(fighterSelection, 'sum', True)
+                    elif statMetric == "Average":
+                        stats = sideBySideStats(fighterSelection, 'mean', True)
+                    else:
+                        stats = sideBySideStats(fighterSelection, "Per Minute", True)
             else:
                 win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
                 draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
                 nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
                 loss = len(fights) - win - draw - nc
                 record(win, loss, draw, nc, "UFC Record")
+
+                if statMetric == "Totals":
+                    stats = sideBySideStats(fighterSelection, 'sum')
+                elif statMetric == "Average":
+                    stats = sideBySideStats(fighterSelection, 'mean')
+                else:
+                    stats = sideBySideStats(fighterSelection, "Per Minute")
         else:
             fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
             win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
@@ -211,26 +239,25 @@ if rad == "Fighter":
             loss = len(fights) - win - draw - nc
             record(win, loss, draw, nc, "UFC Record")
 
-        statMetric = col2.selectbox("Choose how to view by fighter stats",
-                                  ["Totals", "Average", "Per Minute"])
-        if statMetric == "Totals":
-            stats = sideBySideStats(fighterSelection, 'sum')
-        elif statMetric == "Average":
-            stats = sideBySideStats(fighterSelection, 'mean')
-        else:
-            stats = sideBySideStats(fighterSelection, "Per Minute")
+            if statMetric == "Totals":
+                stats = sideBySideStats(fighterSelection, 'sum')
+            elif statMetric == "Average":
+                stats = sideBySideStats(fighterSelection, 'mean')
+            else:
+                stats = sideBySideStats(fighterSelection, "Per Minute")
+
         st.dataframe(stats.style.format("{:2}"))
-        statSelection = col3.selectbox("Select a Stat", stats.columns.drop("Fight_Time_(Min)"))
-        fig = px.bar(stats, stats.index, statSelection)
-        st.plotly_chart(fig, use_container_width=True)
+        statSelection = col2.selectbox("Select a Stat", stats.columns.drop("Fight_Time_(Min)"))
+        fighterGraph(stats, stats.index, statSelection)
 
 if rad == "UFC":
 
     opt = st.selectbox("Category", options=["FIGHTER", "WeightClass", 'Title Fights'])
 
     if opt == "FIGHTER":
-
-        min_fights = st.number_input("Choose the Minimum Amount of Fights (Average is 7)", min_value=1,
+        container2 = st.container()
+        col1, col2 = container2.columns(2)
+        min_fights = col1.number_input("Choose the Minimum Amount of Fights (Average is 7)", min_value=1,
                                      max_value=41, step=1)
 
         ufc = individualFightStats(cleanDataDF)
@@ -241,7 +268,7 @@ if rad == "UFC":
         for i in ufcSumStatsGrouped.columns[:-1]:
             ufcSumStatsGrouped[i] = (ufcSumStatsGrouped[i] / ufcSumStatsGrouped["Fight_Time_(Min)"]).__round__(2)
 
-        attributes = st.selectbox('Stat Selection',
+        attributes = col2.selectbox('Stat Selection',
                                   options=["Total Strikes", "Head Strikes", "Body Strikes", "Leg Strikes",
                                            "Standing Strikes", "Clinch Strikes", "Ground Strikes", "Takedowns"])
 
@@ -284,7 +311,7 @@ if rad == "UFC":
         fightCount = ufc["WeightClass"].value_counts()
         ufcSumStatsGrouped = (ufc.groupby("WeightClass").mean())
         for i in ufcSumStatsGrouped.columns[:-1]:
-            ufcSumStatsGrouped[i] = ((ufcSumStatsGrouped[i] / ufcSumStatsGrouped["Fight_Time_(Min)"])).__round__(2)
+            ufcSumStatsGrouped[i] = (ufcSumStatsGrouped[i] / ufcSumStatsGrouped["Fight_Time_(Min)"]).__round__(2)
 
         attributes = st.selectbox(label='Select Stat', options=ufcSumStatsGrouped.columns[:-1])
 
