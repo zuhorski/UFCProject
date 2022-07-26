@@ -13,6 +13,12 @@ def fighterStats(fighter, title=False):
     blueDF = df.filter(regex='BLUE$', axis=1)
     blueDF["Fight_Time_(Min)"] = (df["Fight_Time_(sec)"] / 60).__round__(2)
 
+    redDF.insert(0, "EVENT", df["EVENT"])
+    redDF.insert(1, "BOUT", df["BOUT"])
+
+    blueDF.insert(0, "EVENT", df["EVENT"])
+    blueDF.insert(1, "BOUT", df["BOUT"])
+
     redDF.columns = redDF.columns.str.replace('_RED', '')
     blueDF.columns = blueDF.columns.str.replace('_BLUE', '')
 
@@ -33,6 +39,12 @@ def opponentStats(fighter, title=False):
     blueDF = df.filter(regex='BLUE$', axis=1)
     blueDF["Fight_Time_(Min)"] = (df["Fight_Time_(sec)"] / 60).__round__(2)
 
+    redDF.insert(0, "EVENT", df["EVENT"])
+    redDF.insert(1, "BOUT", df["BOUT"])
+
+    blueDF.insert(0, "EVENT", df["EVENT"])
+    blueDF.insert(1, "BOUT", df["BOUT"])
+
     redDF.columns = redDF.columns.str.replace('_RED', '')
     redDF = redDF[redDF["FIGHTER"] != fighter]
     blueDF.columns = blueDF.columns.str.replace('_BLUE', '')
@@ -43,11 +55,11 @@ def opponentStats(fighter, title=False):
 
 def sideBySideStats(fighter, metric, title=False):
     if (metric == "sum") | (metric != 'mean'):
-        f = pd.DataFrame(fighterStats(fighter, title).iloc[:, 1:].sum())
-        o = pd.DataFrame(opponentStats(fighter, title).iloc[:, 1:].sum())
+        f = pd.DataFrame(fighterStats(fighter, title).iloc[:, 3:].sum())
+        o = pd.DataFrame(opponentStats(fighter, title).iloc[:, 3:].sum())
     elif metric == "mean":
-        f = pd.DataFrame(fighterStats(fighter, title).iloc[:, 1:].mean().round(2))
-        o = pd.DataFrame(opponentStats(fighter, title).iloc[:, 1:].mean().round(2))
+        f = pd.DataFrame(fighterStats(fighter, title).iloc[:, 3:].mean().round(2))
+        o = pd.DataFrame(opponentStats(fighter, title).iloc[:, 3:].mean().round(2))
 
     combo = pd.merge(f, o, on=f.index)
     combo.rename(columns={'key_0': 'Fighter', '0_x': f'{fighter}', '0_y': 'Opponents'}, inplace=True)
@@ -64,15 +76,18 @@ def individualFightStats(df):
     redDF["CONTROL_TIME"] = (df['CTRL_TIME_RED(sec)']).__round__(2)
     redDF["Fight_Time_(Min)"] = (df["Fight_Time_(sec)"] / 60).__round__(2)
     redDF["WeightClass"] = df["WeightClass"]
+    redDF.insert(0, "EVENT", df["EVENT"])
+    redDF.insert(1, "BOUT", df["BOUT"])
     blueDF = df.filter(regex='BLUE$', axis=1)
     blueDF.insert(22, "CONTROL_TIME", df['CTRL_TIME-BLUE(sec)'])
     blueDF["CONTROL_TIME"] = (df['CTRL_TIME-BLUE(sec)']).__round__(2)
     blueDF["Fight_Time_(Min)"] = (df["Fight_Time_(sec)"] / 60).__round__(2)
     blueDF["WeightClass"] = df["WeightClass"]
+    blueDF.insert(0, "EVENT", df["EVENT"])
+    blueDF.insert(1, "BOUT", df["BOUT"])
     redDF.columns = redDF.columns.str.replace('_RED', '')
     blueDF.columns = blueDF.columns.str.replace('_BLUE', '')
-    ufc = pd.concat([redDF, blueDF]).sort_index()
-    return ufc
+    return pd.concat([redDF, blueDF]).sort_index()
 
 
 if __name__ == "__main__":
@@ -80,6 +95,16 @@ if __name__ == "__main__":
     df = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\CleanData.csv",
                      index_col=0)
 
-    sideBySideStats("Conor McGregor", "noone")
+    # print(individualFightStats(df).columns)
+
+    # print(sideBySideStats("Conor McGregor", 'sum'))
+    # print(sideBySideStats("Conor McGregor", 'sum', title=True))
+    # print(sideBySideStats("Conor McGregor", 'mean'))
+    # print(sideBySideStats("Conor McGregor", 'mean', True))
+    # print(sideBySideStats("Conor McGregor", 'Per Minute'))
+    # print(sideBySideStats("Conor McGregor", 'Per Minute', True))
+
+    # print(fighterStats("Conor McGregor"))
+    print(fighterStats("Conor McGregor", True))
 
 
