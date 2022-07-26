@@ -116,7 +116,7 @@ if rad == "Fighter":
         fighterSelection = st.selectbox("Choose a Fighter", fighters)
 
         # Choose to look at fight history or fight totals
-        interest = st.selectbox("Choose what to look at", ["Fight History", "Fighter Totals"])
+        interest = st.selectbox("Choose what to view", ["Fight History", "Fighter Totals"])
         st.form_submit_button("Submit")
     noStreamlitIndex()
 
