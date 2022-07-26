@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 
 class fighter:
@@ -92,8 +91,8 @@ class fighter:
 
 
 
-if __name__ == "__main__":
-    f = fighter()
+# if __name__ == "__main__":
+    # f = fighter()
     # print(f.fighterStats("Conor McGregor"))
     # print(f.fighterStats("Conor McGregor", True))
     # print(f.opponentStats("Conor McGregor"))
