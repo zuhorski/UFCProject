@@ -73,13 +73,28 @@ class fighter:
         blueDF.columns = blueDF.columns.str.replace('_BLUE', '')
         return pd.concat([redDF, blueDF]).sort_index()
 
-    def sideBySideStats(self, fighter, metric, title=False):
+    def sideBySideStats(self, fighter, metric, title=False, xNumFights=None, recentBeginning=None):
         if (metric == "sum") | (metric != 'mean'):
-            f = pd.DataFrame(self.fighterStats(fighter, title).iloc[:, 1:].sum())
-            o = pd.DataFrame(self.opponentStats(fighter, title).iloc[:, 1:].sum())
+            if xNumFights is None:
+                f = pd.DataFrame(self.fighterStats(fighter, title).iloc[:, 1:].sum())
+                o = pd.DataFrame(self.opponentStats(fighter, title).iloc[:, 1:].sum())
+            elif recentBeginning == "Recent":
+                f = pd.DataFrame(self.fighterStats(fighter, title).reset_index(drop=True).iloc[:xNumFights, 1:].sum())
+                o = pd.DataFrame(self.opponentStats(fighter, title).reset_index(drop=True).iloc[:xNumFights, 1:].sum())
+            else:
+                f = pd.DataFrame(self.fighterStats(fighter, title).reset_index(drop=True).iloc[:, 1:].tail(xNumFights).sum())
+                o = pd.DataFrame(self.opponentStats(fighter, title).reset_index(drop=True).iloc[:, 1:].tail(xNumFights).sum())
+
         elif metric == "mean":
-            f = pd.DataFrame(self.fighterStats(fighter, title).iloc[:, 1:].mean().round(2))
-            o = pd.DataFrame(self.opponentStats(fighter, title).iloc[:, 1:].mean().round(2))
+            if xNumFights is None:
+                f = pd.DataFrame(self.fighterStats(fighter, title).iloc[:, 1:].mean().round(2))
+                o = pd.DataFrame(self.opponentStats(fighter, title).iloc[:, 1:].mean().round(2))
+            elif recentBeginning == "Recent":
+                f = pd.DataFrame(self.fighterStats(fighter, title).reset_index(drop=True).iloc[:xNumFights, 1:].mean())
+                o = pd.DataFrame(self.opponentStats(fighter, title).reset_index(drop=True).iloc[:xNumFights, 1:].mean())
+            else:
+                f = pd.DataFrame(self.fighterStats(fighter, title).reset_index(drop=True).iloc[:, 1:].tail(xNumFights).mean())
+                o = pd.DataFrame(self.opponentStats(fighter, title).reset_index(drop=True).iloc[:, 1:].tail(xNumFights).mean())
 
         combo = pd.merge(f, o, on=f.index)
         combo.rename(columns={'key_0': 'Fighter', '0_x': f'{fighter}', '0_y': 'Opponents'}, inplace=True)
@@ -99,4 +114,4 @@ if __name__ == "__main__":
     # print(f.opponentStats("Conor McGregor", True))
     # print(f.individualFightStats())
     # print(f.sideBySideStats("Conor McGregor", 'p'))
-    # print(f.sideBySideStats("Conor McGregor", 'sum', True))
+    print(f.sideBySideStats("Conor McGregor", 'sum',  xNumFights=13))
