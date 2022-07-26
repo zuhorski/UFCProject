@@ -2,8 +2,9 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 from similarity import similarFights
-from fighterStats import sideBySideStats, individualFightStats
+from fighterClass import fighter
 import plotly.express as px
+
 
 
 def noStreamlitIndex():
@@ -40,6 +41,8 @@ def fighterGraph(x, y, stat):
     fig = px.bar(x, y, stat)
     st.plotly_chart(fig, use_container_width=True)
 
+
+fc = fighter()
 
 # sourcery no-metrics
 cleanDataDF = pd.read_csv(
@@ -111,19 +114,14 @@ if rad == "Similar Fights":
 if rad == "Fighter":
     fighters = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\UFC_Fighters.csv", index_col=0)
 
-    with st.form("MyForm"):
-        # Choose a fighter
-        fighterSelection = st.selectbox("Choose a Fighter", fighters)
+    fighterSelection = st.selectbox("Choose a Fighter", fighters, index=int(fighters[fighters['Name'] == 'Conor McGregor'].index[0]))
 
-        # Choose to look at fight history or fight totals
-        interest = st.selectbox("Choose what to look at", ["Fight History", "Fighter Totals"])
-        st.form_submit_button("Submit")
-    noStreamlitIndex()
+    tab1, tab2, tab3 = st.tabs(["Fight History", "Fighter Totals", "Comparison"])
 
     # Get all the bouts that contain the selected fighter
     opponents = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
 
-    if interest == "Fight History":
+    with tab1:
         # Spoiler prevention - check the box to see the winner
         spoiler4 = st.checkbox("Display Winner")
 
@@ -160,6 +158,7 @@ if rad == "Fighter":
                 # Display Title Fight Finish Percent
                 st.metric("Title Fight Finish Percent", f"{str(((title_finishes / len(beltFight)) * 100).__round__(2))}%")
 
+            noStreamlitIndex()
             st.table(fights)
 
         else:
@@ -192,14 +191,15 @@ if rad == "Fighter":
                 # Display Title Fight Finish Percent
                 st.metric("Title Fight Finish Percent", f"{str(((title_finishes / len(beltFight)) * 100).__round__(2))}%")
 
+            noStreamlitIndex()
             st.table(fights[["EVENT", "BOUT", "WeightClass", "TitleFight"]])
 
-    elif interest == "Fighter Totals":
+    with tab2:
         container = st.container()
         col1, col2, col3 = container.columns(3)
         statMetric = col1.selectbox("Choose how to view fighter stats",
                                     ["Totals", "Average", "Per Minute"])
-        # fightView = col1.selectbox("View stats by", ["Career", "Recent", "First"])
+
         titleFightChecker = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
         if ('Yes' in list(titleFightChecker["TitleFight"])) | ('Interim' in list(titleFightChecker["TitleFight"])):
             titlefightstats = col3.checkbox("Display Stats for Title Fights")
@@ -214,11 +214,11 @@ if rad == "Fighter":
                     record(w, l, d, noContest, "UFC Record in Championship Fights")
 
                     if statMetric == "Totals":
-                        stats = sideBySideStats(fighterSelection, 'sum', True)
+                        stats = fc.sideBySideStats(fighterSelection, 'sum', True)
                     elif statMetric == "Average":
-                        stats = sideBySideStats(fighterSelection, 'mean', True)
+                        stats = fc.sideBySideStats(fighterSelection, 'mean', True)
                     else:
-                        stats = sideBySideStats(fighterSelection, "Per Minute", True)
+                        stats = fc.sideBySideStats(fighterSelection, "Per Minute", True)
             else:
                 win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
                 draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
@@ -227,11 +227,11 @@ if rad == "Fighter":
                 record(win, loss, draw, nc, "UFC Record")
 
                 if statMetric == "Totals":
-                    stats = sideBySideStats(fighterSelection, 'sum')
+                    stats = fc.sideBySideStats(fighterSelection, 'sum')
                 elif statMetric == "Average":
-                    stats = sideBySideStats(fighterSelection, 'mean')
+                    stats = fc.sideBySideStats(fighterSelection, 'mean')
                 else:
-                    stats = sideBySideStats(fighterSelection, "Per Minute")
+                    stats = fc.sideBySideStats(fighterSelection, "Per Minute")
         else:
             fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
             win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
@@ -241,15 +241,16 @@ if rad == "Fighter":
             record(win, loss, draw, nc, "UFC Record")
 
             if statMetric == "Totals":
-                stats = sideBySideStats(fighterSelection, 'sum')
+                stats = fc.sideBySideStats(fighterSelection, 'sum')
             elif statMetric == "Average":
-                stats = sideBySideStats(fighterSelection, 'mean')
+                stats = fc.sideBySideStats(fighterSelection, 'mean')
             else:
-                stats = sideBySideStats(fighterSelection, "Per Minute")
+                stats = fc.sideBySideStats(fighterSelection, "Per Minute")
 
         st.dataframe(stats.style.format("{:2}"))
-        statSelection = col2.selectbox("Select a Stat", stats.columns.drop("Fight_Time_(Min)"))
+
         with st.expander("Fighter vs Opponent Graph"):
+            statSelection = st.selectbox("Select a Stat", stats.columns.drop("Fight_Time_(Min)"))
             fighterGraph(stats, stats.index, statSelection)
 
 if rad == "UFC":
@@ -262,7 +263,7 @@ if rad == "UFC":
         min_fights = col1.number_input("Choose the Minimum Amount of Fights (Average is 7)", min_value=1,
                                      max_value=41, step=1)
 
-        ufc = individualFightStats(cleanDataDF)
+        ufc = fc.individualFightStats()
 
         fightCount = ufc[opt].value_counts()
         ufcSumStatsGrouped = (ufc.groupby(opt).sum())
@@ -309,7 +310,7 @@ if rad == "UFC":
         st.plotly_chart(fig, use_container_width=True)
 
     if opt == "WeightClass":
-        ufc = individualFightStats(cleanDataDF)
+        ufc = fc.individualFightStats(cleanDataDF)
         fightCount = ufc["WeightClass"].value_counts()
         ufcSumStatsGrouped = (ufc.groupby("WeightClass").mean())
         for i in ufcSumStatsGrouped.columns[:-1]:
