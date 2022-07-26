@@ -86,17 +86,17 @@ class fighter:
         combo.set_index("Fighter", inplace=True)
         combo = combo.transpose()
         if (metric != 'sum') & (metric != 'mean'):
-            combo.iloc[:, :-1] = combo.iloc[:, :-1].applymap(lambda x: x / combo.iloc[0, -1])
+            combo.iloc[:, 2:-1] = combo.iloc[:, 2:-1].applymap(lambda x: x / combo.iloc[0, -1])
         return combo.iloc[:, 2:].round(2)
 
 
 
-# if __name__ == "__main__":
-    # f = fighter()
+if __name__ == "__main__":
+    f = fighter()
     # print(f.fighterStats("Conor McGregor"))
     # print(f.fighterStats("Conor McGregor", True))
     # print(f.opponentStats("Conor McGregor"))
     # print(f.opponentStats("Conor McGregor", True))
     # print(f.individualFightStats())
-    # print(f.sideBySideStats("Conor McGregor", 'sum'))
+    # print(f.sideBySideStats("Conor McGregor", 'p'))
     # print(f.sideBySideStats("Conor McGregor", 'sum', True))
