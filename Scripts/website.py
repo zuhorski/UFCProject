@@ -45,8 +45,7 @@ def fighterGraph(x, y, stat):
 fc = fighter()
 
 # sourcery no-metrics
-cleanDataDF = pd.read_csv(
-    "C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\CleanData.csv", index_col=0)
+cleanDataDF = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\CleanData.csv", index_col=0)
 
 st.set_page_config(layout="wide")
 with st.sidebar:
@@ -114,12 +113,15 @@ if rad == "Similar Fights":
 if rad == "Fighter":
     fighters = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\UFC_Fighters.csv", index_col=0)
 
+    #   Default selection is Conor McGregor
     fighterSelection = st.selectbox("Choose a Fighter", fighters, index=int(fighters[fighters['Name'] == 'Conor McGregor'].index[0]))
 
     tab1, tab2, tab3 = st.tabs(["Fight History", "Fighter Totals", "Comparison"])
 
-    # Get all the bouts that contain the selected fighter
+    #   Get all the bouts that contain the selected fighter
     opponents = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
+    #   this is the total number of fights the fighter has been in
+    numFights = len(opponents)
 
     with tab1:
         # Spoiler prevention - check the box to see the winner
@@ -197,57 +199,209 @@ if rad == "Fighter":
     with tab2:
         container = st.container()
         col1, col2, col3 = container.columns(3)
-        statMetric = col1.selectbox("Choose how to view fighter stats",
+
+        careerORsplit = col1.selectbox("View by Career or Split", ['Career', 'Split'])
+        statMetric = col2.selectbox("Choose how to view fighter stats",
                                     ["Totals", "Average", "Per Minute"])
 
+        #   return all the fights for the selected fighter
         titleFightChecker = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
+        #   Check to see if the fighter has any title fights
         if ('Yes' in list(titleFightChecker["TitleFight"])) | ('Interim' in list(titleFightChecker["TitleFight"])):
+            # if the fighter has title fights, display the option for only title fights
             titlefightstats = col3.checkbox("Display Stats for Title Fights")
             fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
-            if titlefightstats:
-                if ('Interim' in list(fights["TitleFight"])) or ('Yes' in list(fights["TitleFight"])):
+
+            # View stats by the fighters entire career
+            if careerORsplit == "Career":
+                if titlefightstats:  #  View stats for only title fights
+                    #   get all of selected fighters title fights
                     beltFight = fights[(fights["TitleFight"] == "Yes") | (fights["TitleFight"] == "Interim")]
                     w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
                     d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
                     noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
                     l = len(beltFight) - w - d - noContest
+                    #   Display the fighters record in title fights
                     record(w, l, d, noContest, "UFC Record in Championship Fights")
 
+                    #   Display aggregated title fight stats of selected fighter and their opponent
                     if statMetric == "Totals":
                         stats = fc.sideBySideStats(fighterSelection, 'sum', True)
                     elif statMetric == "Average":
                         stats = fc.sideBySideStats(fighterSelection, 'mean', True)
                     else:
                         stats = fc.sideBySideStats(fighterSelection, "Per Minute", True)
+                else:  #    if title fight only is NOT selected
+                    win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
+                    draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
+                    nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
+                    loss = len(fights) - win - draw - nc
+                    #   Display career ufc record
+                    record(win, loss, draw, nc, "UFC Record")
+
+                    #   Display aggregated stats of selected fighter and their opponent
+                    if statMetric == "Totals":
+                        stats = fc.sideBySideStats(fighterSelection, 'sum')
+                    elif statMetric == "Average":
+                        stats = fc.sideBySideStats(fighterSelection, 'mean')
+                    else:
+                        stats = fc.sideBySideStats(fighterSelection, "Per Minute")
+
+            # View stats by a SPLIT
             else:
+                recentORBeginning = col1.selectbox("Recent X Fights or First X Fights", ["Recent", "First"])
+                if titlefightstats:  # if only title fights is chosen for split
+                    #   Get title fight for selected fighter
+                    beltFight = fights[(fights["TitleFight"] == "Yes") | (fights["TitleFight"] == "Interim")]
+
+                    # Stats for the most recent X number of title fights
+                    if recentORBeginning == "Recent":
+                        nf = int(col2.number_input("Recent Number of Fights", min_value=1, max_value=len(beltFight), value=len(beltFight)))
+
+                        beltFight = beltFight.head(nf)
+                        w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
+                        d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
+                        noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
+                        l = beltFight[beltFight['WINNER'] != fighterSelection]['WINNER'].count()
+                        # Display title fight record for most recent X title fights
+                        record(w, l, d, noContest, "UFC Record in Championship Fights")
+
+                        # Display aggregated title stats for fighter and their opponents
+                        if statMetric == "Totals":
+                            stats = fc.sideBySideStats(fighterSelection, 'sum', True, nf, 'Recent')
+                        elif statMetric == "Average":
+                            stats = fc.sideBySideStats(fighterSelection, 'mean', True, nf, 'Recent')
+                        else:
+                            stats = fc.sideBySideStats(fighterSelection, "Per Minute", True, nf, 'Recent')
+
+                    # Stats for the first X number of title fights in the fighters career
+                    else:
+                        nf = int(col2.number_input("First Number of Fights", min_value=1, max_value=len(beltFight), value=len(beltFight)))
+
+                        beltFight = beltFight.tail(nf)
+                        w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
+                        d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
+                        noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
+                        l = beltFight[beltFight['WINNER'] != fighterSelection]['WINNER'].count()
+                        # Display the record of fighters first X number of title fights
+                        record(w, l, d, noContest, "UFC Record in Championship Fights")
+
+                        # Display aggregated title stats of fighters first X title fights along with their opponents
+                        if statMetric == "Totals":
+                            stats = fc.sideBySideStats(fighterSelection, 'sum', True, nf, 'First')
+                        elif statMetric == "Average":
+                            stats = fc.sideBySideStats(fighterSelection, 'mean', True, nf, 'First')
+                        else:
+                            stats = fc.sideBySideStats(fighterSelection, "Per Minute", True, nf, 'First')
+
+                # if title fights is NOT chosen for splits
+                else:
+                    # Stats for the most recent X number of fights
+                    if recentORBeginning == "Recent":
+                        nf = int(col2.number_input("Recent Number of Fights", min_value=1, max_value=len(fights), value=len(fights)))
+
+                        fights = fights.head(nf)
+                        win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
+                        draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
+                        nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
+                        loss = fights[fights['WINNER'] != fighterSelection]['WINNER'].count()
+                        # Display record of fighters most recent X fights
+                        record(win, loss, draw, nc, "UFC Record")
+
+                        # Display aggregated stats of fighters most recent X fights along with opponents
+                        if statMetric == "Totals":
+                            stats = fc.sideBySideStats(fighterSelection, 'sum', xNumFights=nf, recentBeginning='Recent')
+                        elif statMetric == "Average":
+                            stats = fc.sideBySideStats(fighterSelection, 'mean', xNumFights=nf, recentBeginning='Recent')
+                        else:
+                            stats = fc.sideBySideStats(fighterSelection, "Per Minute", xNumFights=nf, recentBeginning='Recent')
+
+                    # Stats for the first X number of fights
+                    else:
+                        nf = int(col2.number_input("First Number of Fights", min_value=1, max_value=len(fights), value=len(fights)))
+                        fights = fights.tail(nf)
+                        win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
+                        draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
+                        nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
+                        loss = len(fights) - win - draw - nc
+                        # Display record of fighters first X number of fights
+                        record(win, loss, draw, nc, "UFC Record")
+
+                        # Display aggregated stats of fighters first X fights along with their opponents
+                        if statMetric == "Totals":
+                            stats = fc.sideBySideStats(fighterSelection, 'sum', xNumFights=nf, recentBeginning='First')
+                        elif statMetric == "Average":
+                            stats = fc.sideBySideStats(fighterSelection, 'mean', xNumFights=nf, recentBeginning='First')
+                        else:
+                            stats = fc.sideBySideStats(fighterSelection, "Per Minute", xNumFights=nf, recentBeginning='First')
+
+        # if the fighter has no title fights
+        else:
+            fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
+
+            # View stats by the fighters entire career
+            if careerORsplit == "Career":
                 win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
                 draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
                 nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
                 loss = len(fights) - win - draw - nc
+
+                # Display record of fighters entire career
                 record(win, loss, draw, nc, "UFC Record")
 
+                # Display aggregated stats of fighter and their opponents
                 if statMetric == "Totals":
                     stats = fc.sideBySideStats(fighterSelection, 'sum')
                 elif statMetric == "Average":
                     stats = fc.sideBySideStats(fighterSelection, 'mean')
                 else:
                     stats = fc.sideBySideStats(fighterSelection, "Per Minute")
-        else:
-            fights = opponents[["EVENT", "BOUT", "WeightClass", "WIN_BY", "WINNER", "TitleFight"]]
-            win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
-            draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
-            nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
-            loss = len(fights) - win - draw - nc
-            record(win, loss, draw, nc, "UFC Record")
 
-            if statMetric == "Totals":
-                stats = fc.sideBySideStats(fighterSelection, 'sum')
-            elif statMetric == "Average":
-                stats = fc.sideBySideStats(fighterSelection, 'mean')
+            # View stats by a SPLIT
             else:
-                stats = fc.sideBySideStats(fighterSelection, "Per Minute")
+                recentORBeginning = col1.selectbox("Recent X Fights or First X Fights", ["Recent", "First"])
 
-        st.dataframe(stats.style.format("{:2}"))
+                # View fighters most recent X number of fights
+                if recentORBeginning == "Recent":
+                    nf = int(col2.number_input("Recent Number of Fights", min_value=1, max_value=len(fights), value=len(fights)))
+
+                    fights = fights.head(nf)
+                    win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
+                    draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
+                    nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
+                    loss = fights[fights['WINNER'] != fighterSelection]['WINNER'].count()
+                    # Display record of fighters most recent X fights
+                    record(win, loss, draw, nc, "UFC Record")
+
+                    # Display aggregated stats of fighter most recent X fights along with their opponents
+                    if statMetric == "Totals":
+                        stats = fc.sideBySideStats(fighterSelection, 'sum', xNumFights=nf, recentBeginning='Recent')
+                    elif statMetric == "Average":
+                        stats = fc.sideBySideStats(fighterSelection, 'mean', xNumFights=nf, recentBeginning='Recent')
+                    else:
+                        stats = fc.sideBySideStats(fighterSelection, "Per Minute", xNumFights=nf, recentBeginning='Recent')
+
+                # View fighters first X number of fights
+                else:
+                    nf = int(col2.number_input("First Number of Fights", min_value=1, max_value=len(fights), value=len(fights)))
+
+                    fights = fights.tail(nf)
+                    win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
+                    draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
+                    nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
+                    loss = len(fights) - win - draw - nc
+                    # Display record of fighters first X number of fights
+                    record(win, loss, draw, nc, "UFC Record")
+
+                    # Display aggregated stats of fightres first X number of fights along with their opponents
+                    if statMetric == "Totals":
+                        stats = fc.sideBySideStats(fighterSelection, 'sum', xNumFights=nf, recentBeginning='First')
+                    elif statMetric == "Average":
+                        stats = fc.sideBySideStats(fighterSelection, 'mean', xNumFights=nf, recentBeginning='First')
+                    else:
+                        stats = fc.sideBySideStats(fighterSelection, "Per Minute", xNumFights=nf, recentBeginning='First')
+
+        st.table(stats)
 
         with st.expander("Fighter vs Opponent Graph"):
             statSelection = st.selectbox("Select a Stat", stats.columns.drop("Fight_Time_(Min)"))
