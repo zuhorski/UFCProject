@@ -199,6 +199,7 @@ if rad == "Fighter":
         col1, col2, col3 = container.columns(3)
         statMetric = col1.selectbox("Choose how to view fighter stats",
                                     ["Totals", "Average", "Per Minute"])
+        # fightView = col1.selectbox("View stats by", ["Career", "Recent", "First"])
         titleFightChecker = cleanDataDF[cleanDataDF["BOUT"].str.contains(fighterSelection)]
         if ('Yes' in list(titleFightChecker["TitleFight"])) | ('Interim' in list(titleFightChecker["TitleFight"])):
             titlefightstats = col3.checkbox("Display Stats for Title Fights")
@@ -248,7 +249,8 @@ if rad == "Fighter":
 
         st.dataframe(stats.style.format("{:2}"))
         statSelection = col2.selectbox("Select a Stat", stats.columns.drop("Fight_Time_(Min)"))
-        fighterGraph(stats, stats.index, statSelection)
+        with st.expander("Fighter vs Opponent Graph"):
+            fighterGraph(stats, stats.index, statSelection)
 
 if rad == "UFC":
 
