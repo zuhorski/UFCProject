@@ -220,7 +220,7 @@ if rad == "Fighter":
                     w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
                     d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
                     noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
-                    l = len(beltFight) - w - d - noContest
+                    l = beltFight[(beltFight['WINNER'] != fighterSelection) & (beltFight['WINNER'] != "NC")]['WINNER'].count()
                     #   Display the fighters record in title fights
                     record(w, l, d, noContest, "UFC Record in Championship Fights")
 
@@ -262,7 +262,7 @@ if rad == "Fighter":
                         w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
                         d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
                         noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
-                        l = beltFight[beltFight['WINNER'] != fighterSelection]['WINNER'].count()
+                        l = beltFight[(beltFight['WINNER'] != fighterSelection) & (beltFight['WINNER'] != "NC")]['WINNER'].count()
                         # Display title fight record for most recent X title fights
                         record(w, l, d, noContest, "UFC Record in Championship Fights")
 
@@ -282,7 +282,7 @@ if rad == "Fighter":
                         w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
                         d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
                         noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
-                        l = beltFight[beltFight['WINNER'] != fighterSelection]['WINNER'].count()
+                        l = beltFight[(beltFight['WINNER'] != fighterSelection) & (beltFight['WINNER'] != "NC")]['WINNER'].count()
                         # Display the record of fighters first X number of title fights
                         record(w, l, d, noContest, "UFC Record in Championship Fights")
 
@@ -344,7 +344,7 @@ if rad == "Fighter":
                 win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
                 draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
                 nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
-                loss = len(fights) - win - draw - nc
+                loss = fights[(fights['WINNER'] != fighterSelection) & (fights['WINNER'] != "NC")]['WINNER'].count()
 
                 # Display record of fighters entire career
                 record(win, loss, draw, nc, "UFC Record")
@@ -369,7 +369,7 @@ if rad == "Fighter":
                     win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
                     draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
                     nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
-                    loss = fights[fights['WINNER'] != fighterSelection]['WINNER'].count()
+                    loss = fights[(fights['WINNER'] != fighterSelection) & (fights['WINNER'] != "NC")]['WINNER'].count()
                     # Display record of fighters most recent X fights
                     record(win, loss, draw, nc, "UFC Record")
 
@@ -389,7 +389,7 @@ if rad == "Fighter":
                     win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
                     draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
                     nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
-                    loss = len(fights) - win - draw - nc
+                    loss = fights[(fights['WINNER'] != fighterSelection) & (fights['WINNER'] != "NC")]['WINNER'].count()
                     # Display record of fighters first X number of fights
                     record(win, loss, draw, nc, "UFC Record")
 
@@ -408,7 +408,7 @@ if rad == "Fighter":
             fighterGraph(stats, stats.index, statSelection)
         if careerORsplit == "Split":
             with st.expander("Fighter Career vs Split"):
-
+                st.subheader(f"Comparing {fighterSelection} Career Stats ({statMetric}) To  {recentORBeginning} {nf} Fights")
                 career = (pd.DataFrame(fc.fighterStats(fighterSelection, metric=statMetric)).rename(columns={0:"Career"}).transpose())
                 # st.write(career)
                 split = (pd.DataFrame(stats.loc[fighterSelection, :]).rename(columns={fighterSelection:"Split"}).transpose())
