@@ -415,8 +415,8 @@ if rad == "Fighter":
                 # st.write(split)
                 dfGraph = pd.concat([career, split])
                 st.write(dfGraph)
-                statSelection = st.selectbox("Select a Stat", dfGraph.columns)
-                fig = px.bar(dfGraph, dfGraph.index, statSelection, title=f"{fighterSelection} Career Stats ({statMetric}) vs {recentORBeginning} {nf} Fights")
+                statSelection_dfGraph = st.selectbox("Select a Stat:", dfGraph.columns.drop("Fight_Time_(Min)"))
+                fig = px.bar(dfGraph, dfGraph.index, statSelection_dfGraph, title=f"{fighterSelection} Career Stats ({statMetric}) vs {recentORBeginning} {nf} Fights")
 
                 st.plotly_chart(fig, use_container_width=True)
 
