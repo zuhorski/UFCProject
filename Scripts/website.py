@@ -393,7 +393,7 @@ if rad == "Fighter":
                     # Display record of fighters first X number of fights
                     record(win, loss, draw, nc, "UFC Record")
 
-                    # Display aggregated stats of fightres first X number of fights along with their opponents
+                    # Display aggregated stats of fighters first X number of fights along with their opponents
                     if statMetric == "Totals":
                         stats = fc.sideBySideStats(fighterSelection, 'sum', xNumFights=nf, recentBeginning='First')
                     elif statMetric == "Average":
