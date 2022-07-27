@@ -5,7 +5,7 @@ class fighter:
     def __init__(self):
         self._data = pd.read_csv("C:\\Users\\sabzu\\Documents\\UFCRecommendationProject\\UFCProject\\DataFiles2\\CleanData.csv", index_col=0)
 
-    def fighterStats(self, fighter, title=False):
+    def fighterStats(self, fighter, title=False, metric=None):
         df = self._data
         df = df[df["BOUT"].str.contains(fighter)]
         if title and ('Yes' in list(df["TitleFight"])) | ('Interim' in list(df["TitleFight"])):
@@ -27,7 +27,17 @@ class fighter:
         redDF = (redDF[redDF["FIGHTER"] == fighter])
         blueDF = (blueDF[blueDF["FIGHTER"] == fighter])
 
-        return pd.concat([redDF, blueDF]).sort_index()
+        stat = pd.concat([redDF, blueDF]).sort_index()
+        if metric is None:
+            return stat
+        elif metric == "Totals":
+            return stat.iloc[:, 3:].sum()
+        elif metric == "Average":
+            return stat.iloc[:, 3:].mean()
+        else:
+            stat = pd.DataFrame(stat.sum()).transpose()
+            stat.iloc[:, 3:-1] = stat.iloc[:, 3:-1].applymap(lambda x: x / stat.iloc[0, -1])
+            return stat.iloc[0, 3:]
 
     def opponentStats(self, fighter, title=False):
         df = self._data
@@ -102,13 +112,17 @@ class fighter:
         combo = combo.transpose()
         if (metric != 'sum') & (metric != 'mean'):
             combo.iloc[:, 2:-1] = combo.iloc[:, 2:-1].applymap(lambda x: x / combo.iloc[0, -1])
-        return combo.iloc[:, 2:].round(2)
+            return combo.iloc[:, 2:].round(2)
+        elif metric == 'mean':
+            return combo.iloc[:, :]
+        else:
+            return combo.iloc[:, 2:]
 
 
 
 if __name__ == "__main__":
     f = fighter()
-    # print(f.fighterStats("Conor McGregor"))
+    print(f.fighterStats("Conor McGregor", metric = 'p'))
     # print(f.fighterStats("Conor McGregor", True))
     # print(f.opponentStats("Conor McGregor"))
     # print(f.opponentStats("Conor McGregor", True))
