@@ -136,7 +136,7 @@ if rad == "Fighter":
             win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
             draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
             nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
-            loss = len(fights) - win - draw - nc
+            loss = fights[(fights['WINNER'] != fighterSelection) & (fights['WINNER'] != "NC")]['WINNER'].count()
 
             # Display UFC Record
             record(win, loss, draw, nc, "UFC Record")
@@ -153,7 +153,7 @@ if rad == "Fighter":
                 w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
                 d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
                 noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
-                l = len(beltFight) - w - d - noContest
+                l = beltFight[(beltFight['WINNER'] != fighterSelection) & (beltFight['WINNER'] != "NC")]['WINNER'].count()
 
                 # Display UFC Title Fight Record
                 record(w, l, d, noContest, "UFC Record in Title Fights")
@@ -170,7 +170,7 @@ if rad == "Fighter":
             win = fights[fights['WINNER'] == fighterSelection]['WINNER'].count()
             draw = fights[fights['WINNER'] == "D"]['WINNER'].count()
             nc = fights[fights['WINNER'] == "NC"]['WINNER'].count()
-            loss = len(fights) - win - draw - nc
+            loss = fights[(fights['WINNER'] != fighterSelection) & (fights['WINNER'] != "NC")]['WINNER'].count()
 
             # Display UFC Record
             record(win, loss, draw, nc, "UFC Record")
@@ -186,7 +186,7 @@ if rad == "Fighter":
                 w = beltFight[beltFight['WINNER'] == fighterSelection]['WINNER'].count()
                 d = beltFight[beltFight['WINNER'] == "D"]['WINNER'].count()
                 noContest = beltFight[beltFight['WINNER'] == "NC"]['WINNER'].count()
-                l = len(beltFight) - w - d - noContest
+                l = beltFight[(beltFight['WINNER'] != fighterSelection) & (beltFight['WINNER'] != "NC")]['WINNER'].count()
 
                 # Display UFC Title Fight Record
                 record(w, l, d, noContest, "UFC Record in Title Fights")
