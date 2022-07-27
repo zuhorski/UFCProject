@@ -114,4 +114,4 @@ if __name__ == "__main__":
     # print(f.opponentStats("Conor McGregor", True))
     # print(f.individualFightStats())
     # print(f.sideBySideStats("Conor McGregor", 'p'))
-    print(f.sideBySideStats("Conor McGregor", 'sum',  xNumFights=13))
+    # print(f.sideBySideStats("Conor McGregor", 'sum',  xNumFights=13))
