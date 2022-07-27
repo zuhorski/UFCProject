@@ -401,11 +401,27 @@ if rad == "Fighter":
                     else:
                         stats = fc.sideBySideStats(fighterSelection, "Per Minute", xNumFights=nf, recentBeginning='First')
 
-        st.table(stats)
+        fighterVSOpponent = st.table(stats)
 
         with st.expander("Fighter vs Opponent Graph"):
             statSelection = st.selectbox("Select a Stat", stats.columns.drop("Fight_Time_(Min)"))
             fighterGraph(stats, stats.index, statSelection)
+        if careerORsplit == "Split":
+            with st.expander("Fighter Career vs Split"):
+
+                career = (pd.DataFrame(fc.fighterStats(fighterSelection, metric=statMetric)).rename(columns={0:"Career"}).transpose())
+                # st.write(career)
+                split = (pd.DataFrame(stats.loc[fighterSelection, :]).rename(columns={fighterSelection:"Split"}).transpose())
+                # st.write(split)
+                dfGraph = pd.concat([career, split])
+                st.write(dfGraph)
+                statSelection = st.selectbox("Select a Stat", dfGraph.columns)
+                fig = px.bar(dfGraph, dfGraph.index, statSelection, title=f"{fighterSelection} Career Stats ({statMetric}) vs {recentORBeginning} {nf} Fights")
+
+                st.plotly_chart(fig, use_container_width=True)
+
+
+
 
 if rad == "UFC":
 
