@@ -419,6 +419,15 @@ if rad == "Fighter":
                 fig = px.bar(dfGraph, dfGraph.index, statSelection_dfGraph, title=f"{fighterSelection} Career Stats ({statMetric}) vs {recentORBeginning} {nf} Fights")
 
                 st.plotly_chart(fig, use_container_width=True)
+        else:
+            with st.expander("Individual Fight Stats"):
+                indFights = fc.individualFightStats(True)
+                indFights = indFights[indFights["BOUT"].str.contains(fighterSelection)]
+                opt = indFights["EVENT"] +" --- "+ indFights["BOUT"]
+                s = st.selectbox("Choose a fight", opt.unique())
+                s = s.split(" --- ")[0]
+                st.write(indFights[indFights["EVENT"] == s])
+
 
 
 
