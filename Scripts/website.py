@@ -408,17 +408,31 @@ if rad == "Fighter":
             fighterGraph(stats, stats.index, statSelection)
         if careerORsplit == "Split":
             with st.expander("Fighter Career vs Split"):
-                st.subheader(f"Comparing {fighterSelection} Career Stats ({statMetric}) To  {recentORBeginning} {nf} Fights")
-                career = (pd.DataFrame(fc.fighterStats(fighterSelection, metric=statMetric)).rename(columns={0:"Career"}).transpose())
-                # st.write(career)
-                split = (pd.DataFrame(stats.loc[fighterSelection, :]).rename(columns={fighterSelection:"Split"}).transpose())
-                # st.write(split)
-                dfGraph = pd.concat([career, split])
-                st.write(dfGraph)
-                statSelection_dfGraph = st.selectbox("Select a Stat:", dfGraph.columns.drop("Fight_Time_(Min)"))
-                fig = px.bar(dfGraph, dfGraph.index, statSelection_dfGraph, title=f"{fighterSelection} Career Stats ({statMetric}) vs {recentORBeginning} {nf} Fights")
+                if not titlefightstats:
+                    st.subheader(f"Comparing {fighterSelection} Career Stats ({statMetric}) To  {recentORBeginning} {nf} Fights")
+                    career = (pd.DataFrame(fc.fighterStats(fighterSelection, metric=statMetric)).rename(columns={0:"Career"}).transpose())
+                    # st.write(career)
+                    split = (pd.DataFrame(stats.loc[fighterSelection, :]).rename(columns={fighterSelection:"Split"}).transpose())
+                    # st.write(split)
+                    dfGraph = pd.concat([career, split])
+                    st.write(dfGraph)
+                    statSelection_dfGraph = st.selectbox("Select a Stat:", dfGraph.columns.drop("Fight_Time_(Min)"))
 
-                st.plotly_chart(fig, use_container_width=True)
+                    fig = px.bar(dfGraph, dfGraph.index, statSelection_dfGraph, title=f"{fighterSelection} Career Stats ({statMetric}) vs {recentORBeginning} {nf} Fights")
+                    st.plotly_chart(fig, use_container_width=True)
+
+                else:
+                    st.subheader(f"{fighterSelection} Career Title Fight Stats ({statMetric}) vs  {recentORBeginning} {nf} Title Fights")
+                    career = (pd.DataFrame(fc.fighterStats(fighterSelection, metric=statMetric, title=True)).rename(columns={0: "Career"}).transpose())
+                    # st.write(career)
+                    split = (pd.DataFrame(stats.loc[fighterSelection, :]).rename(columns={fighterSelection: "Split"}).transpose())
+                    # st.write(split)
+                    dfGraph = pd.concat([career, split])
+                    st.write(dfGraph)
+                    statSelection_dfGraph = st.selectbox("Select a Stat:", dfGraph.columns.drop("Fight_Time_(Min)"))
+
+                    fig = px.bar(dfGraph, dfGraph.index, statSelection_dfGraph, title=f"{fighterSelection} Career Title Fight Stats ({statMetric}) vs {recentORBeginning} {nf} Title Fights")
+                    st.plotly_chart(fig, use_container_width=True)
         else:
             with st.expander("Individual Fight Stats"):
                 indFights = fc.individualFightStats(True)
