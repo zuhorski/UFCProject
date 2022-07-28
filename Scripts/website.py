@@ -6,7 +6,6 @@ from fighterClass import fighter
 import plotly.express as px
 
 
-
 def noStreamlitIndex():
     # No index shown in streamlit dataframes or tables
     hide_table_row_index = """
@@ -411,9 +410,7 @@ if rad == "Fighter":
                 if not titlefightstats:
                     st.subheader(f"Comparing {fighterSelection} Career Stats ({statMetric}) To  {recentORBeginning} {nf} Fights")
                     career = (pd.DataFrame(fc.fighterStats(fighterSelection, metric=statMetric)).rename(columns={0:"Career"}).transpose())
-                    # st.write(career)
                     split = (pd.DataFrame(stats.loc[fighterSelection, :]).rename(columns={fighterSelection:"Split"}).transpose())
-                    # st.write(split)
                     dfGraph = pd.concat([career, split])
                     st.write(dfGraph)
                     statSelection_dfGraph = st.selectbox("Select a Stat:", dfGraph.columns.drop("Fight_Time_(Min)"))
@@ -424,9 +421,7 @@ if rad == "Fighter":
                 else:
                     st.subheader(f"{fighterSelection} Career Title Fight Stats ({statMetric}) vs  {recentORBeginning} {nf} Title Fights")
                     career = (pd.DataFrame(fc.fighterStats(fighterSelection, metric=statMetric, title=True)).rename(columns={0: "Career"}).transpose())
-                    # st.write(career)
                     split = (pd.DataFrame(stats.loc[fighterSelection, :]).rename(columns={fighterSelection: "Split"}).transpose())
-                    # st.write(split)
                     dfGraph = pd.concat([career, split])
                     st.write(dfGraph)
                     statSelection_dfGraph = st.selectbox("Select a Stat:", dfGraph.columns.drop("Fight_Time_(Min)"))
@@ -441,9 +436,6 @@ if rad == "Fighter":
                 s = st.selectbox("Choose a fight", opt.unique())
                 s = s.split(" --- ")[0]
                 st.write(indFights[indFights["EVENT"] == s])
-
-
-
 
 
 if rad == "UFC":
