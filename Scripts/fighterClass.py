@@ -63,7 +63,7 @@ class fighter:
 
         return pd.concat([redDF, blueDF]).sort_index()
 
-    def individualFightStats(self):
+    def individualFightStats(self, includeWinner=False):
         df = self._data
         redDF = df.filter(regex='RED$', axis=1)
         redDF.insert(22, "CONTROL_TIME", df['CTRL_TIME_RED(sec)'])
@@ -81,7 +81,11 @@ class fighter:
         blueDF.insert(1, "BOUT", df["BOUT"])
         redDF.columns = redDF.columns.str.replace('_RED', '')
         blueDF.columns = blueDF.columns.str.replace('_BLUE', '')
-        return pd.concat([redDF, blueDF]).sort_index()
+        if not includeWinner:
+            return pd.concat([redDF, blueDF]).sort_index()
+        stats = pd.concat([redDF, blueDF]).sort_index()
+        stats.insert(26, "WINNER", df["WINNER"])
+        return stats
 
     def sideBySideStats(self, fighter, metric, title=False, xNumFights=None, recentBeginning=None):
         if (metric == "sum") | (metric != 'mean'):
@@ -122,10 +126,10 @@ class fighter:
 
 if __name__ == "__main__":
     f = fighter()
-    print(f.fighterStats("Conor McGregor", metric = 'p'))
+    # print(f.fighterStats("Conor McGregor", metric = 'Average'))
     # print(f.fighterStats("Conor McGregor", True))
     # print(f.opponentStats("Conor McGregor"))
     # print(f.opponentStats("Conor McGregor", True))
-    # print(f.individualFightStats())
+    print(f.individualFightStats())
     # print(f.sideBySideStats("Conor McGregor", 'p'))
     # print(f.sideBySideStats("Conor McGregor", 'sum',  xNumFights=13))
