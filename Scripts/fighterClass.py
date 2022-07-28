@@ -1,5 +1,5 @@
 import pandas as pd
-
+import numpy as np
 
 class fighter:
     def __init__(self):
@@ -17,9 +17,11 @@ class fighter:
 
         redDF.insert(0, "EVENT", df["EVENT"])
         redDF.insert(1, "BOUT", df["BOUT"])
+        redDF.insert(12, "Control_Time", df["CTRL_TIME_RED(sec)"])
 
         blueDF.insert(0, "EVENT", df["EVENT"])
         blueDF.insert(1, "BOUT", df["BOUT"])
+        blueDF.insert(12, "Control_Time", df["CTRL_TIME-BLUE(sec)"])
 
         redDF.columns = redDF.columns.str.replace('_RED', '')
         blueDF.columns = blueDF.columns.str.replace('_BLUE', '')
@@ -39,7 +41,7 @@ class fighter:
             stat.iloc[:, 3:-1] = stat.iloc[:, 3:-1].applymap(lambda x: x / stat.iloc[0, -1])
             return stat.iloc[0, 3:]
 
-    def opponentStats(self, fighter, title=False):
+    def opponentStats(self, fighter, title=False, metric=None):
         df = self._data
         df = df[df["BOUT"].str.contains(fighter)]
         if title and ('Yes' in list(df["TitleFight"])) | ('Interim' in list(df["TitleFight"])):
@@ -52,16 +54,28 @@ class fighter:
 
         redDF.insert(0, "EVENT", df["EVENT"])
         redDF.insert(1, "BOUT", df["BOUT"])
+        redDF.insert(12, "Control_Time", df["CTRL_TIME_RED(sec)"])
 
         blueDF.insert(0, "EVENT", df["EVENT"])
         blueDF.insert(1, "BOUT", df["BOUT"])
+        blueDF.insert(12, "Control_Time", df["CTRL_TIME-BLUE(sec)"])
 
         redDF.columns = redDF.columns.str.replace('_RED', '')
         redDF = redDF[redDF["FIGHTER"] != fighter]
         blueDF.columns = blueDF.columns.str.replace('_BLUE', '')
         blueDF = blueDF[blueDF["FIGHTER"] != fighter]
 
-        return pd.concat([redDF, blueDF]).sort_index()
+        stat = pd.concat([redDF, blueDF]).sort_index()
+        if metric is None:
+            return stat
+        elif metric == "Totals":
+            return stat.iloc[:, 3:].sum()
+        elif metric == "Average":
+            return stat.iloc[:, 3:].mean()
+        else:
+            stat = pd.DataFrame(stat.sum()).transpose()
+            stat.iloc[:, 3:-1] = stat.iloc[:, 3:-1].applymap(lambda x: x / stat.iloc[0, -1])
+            return stat.iloc[0, 3:]
 
     def individualFightStats(self, includeWinner=False):
         df = self._data
@@ -122,6 +136,39 @@ class fighter:
         else:
             return combo.iloc[:, 2:]
 
+    def fighterPercentage(self, fighter):
+        x = self.fighterStats(fighter=fighter)
+
+        sig_str_percent = x["SIG_STR_LAND"] / x["SIG_STR_ATT"]
+        average_sig_str_percent = (np.mean(sig_str_percent)).round(3)
+        total_str_percent = x["TOTAL_STR_LAND"] / x["TOTAL_STR_ATT"]
+        average_total_str_percent = np.mean(total_str_percent).round(3)
+        td_percent = x["TD"] / x["TD_ATT"]
+        average_td_percent = np.mean(td_percent).round(3)
+        head_str_percent = x["HEAD_LAND"] / x["HEAD_ATT"]
+        average_head_str_percent = np.mean(head_str_percent).round(3)
+        body_str_percent = x["BODY_LAND"] / x["BODY_ATT"]
+        average_body_str_percent = np.mean(body_str_percent).round(3)
+        leg_str_percent = x["LEG_LAND"] / x["LEG_ATT"]
+        average_leg_str_percent = np.mean(leg_str_percent).round(3)
+        stnd_str_percent = x["STD_STR_LAND"] / x["STD_STR_ATT"]
+        average_stnd_str_land_percent = (np.mean(stnd_str_percent)).round(3)
+        clinch_str_percent = x["CLINCH_STR_LAND"] / x["CLINCH_STR_ATT"]
+        average_clinch_str_land_percent = np.mean(clinch_str_percent).round(3)
+        ground_str_percent = x["GRD_STR_LAND"] / x["GRD_STR_ATT"]
+        average_ground_str_land_percent = np.mean(ground_str_percent).round(3)
+
+        fdf = x[["EVENT", "BOUT"]]
+        fdf.insert(2, "SIG_STR_PERCENT", sig_str_percent)
+        fdf.insert(3, "TOTAL_STR_PERCENT", total_str_percent)
+        fdf.insert(4, "TD_PERCENT", td_percent)
+        fdf.insert(5, "HEAD_STR_PERCENT", head_str_percent)
+        fdf.insert(6, "BODY_STR_PERCENT", body_str_percent)
+        fdf.insert(7, "LEG_STR_PERCENT", leg_str_percent)
+        fdf.insert(8, "STD_STR_PERCENT", stnd_str_percent)
+        fdf.insert(9, "CLINCH_STR_PERCENT", clinch_str_percent)
+        fdf.insert(10, "GRND_STR_LAND_PERCENT", ground_str_percent)
+        return fdf
 
 
 if __name__ == "__main__":
@@ -130,6 +177,8 @@ if __name__ == "__main__":
     # print(f.fighterStats("Conor McGregor", True))
     # print(f.opponentStats("Conor McGregor"))
     # print(f.opponentStats("Conor McGregor", True))
-    print(f.individualFightStats())
+    # print(f.individualFightStats())
     # print(f.sideBySideStats("Conor McGregor", 'p'))
     # print(f.sideBySideStats("Conor McGregor", 'sum',  xNumFights=13))
+    # print(f.fighterStats('Conor McGregor'))
+    print(f.fighterPercentage('Conor McGregor'))
