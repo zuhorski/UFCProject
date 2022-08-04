@@ -204,6 +204,40 @@ class fighter:
         fdf.insert(10, "GRND_STR_LAND_PERCENT", ground_str_percent)
         return fdf
 
+    def ufcPercentage(self):
+        x = self.individualFightStats()
+
+        sig_str_percent = x["SIG_STR_LAND"] / x["SIG_STR_ATT"]
+        average_sig_str_percent = (np.mean(sig_str_percent)).round(3)
+        total_str_percent = x["TOTAL_STR_LAND"] / x["TOTAL_STR_ATT"]
+        average_total_str_percent = np.mean(total_str_percent).round(3)
+        td_percent = x["TD"] / x["TD_ATT"]
+        average_td_percent = np.mean(td_percent).round(3)
+        head_str_percent = x["HEAD_LAND"] / x["HEAD_ATT"]
+        average_head_str_percent = np.mean(head_str_percent).round(3)
+        body_str_percent = x["BODY_LAND"] / x["BODY_ATT"]
+        average_body_str_percent = np.mean(body_str_percent).round(3)
+        leg_str_percent = x["LEG_LAND"] / x["LEG_ATT"]
+        average_leg_str_percent = np.mean(leg_str_percent).round(3)
+        stnd_str_percent = x["STD_STR_LAND"] / x["STD_STR_ATT"]
+        average_stnd_str_land_percent = (np.mean(stnd_str_percent)).round(3)
+        clinch_str_percent = x["CLINCH_STR_LAND"] / x["CLINCH_STR_ATT"]
+        average_clinch_str_land_percent = np.mean(clinch_str_percent).round(3)
+        ground_str_percent = x["GRD_STR_LAND"] / x["GRD_STR_ATT"]
+        average_ground_str_land_percent = np.mean(ground_str_percent).round(3)
+
+        fdf = x[["EVENT", "BOUT"]]
+        fdf.insert(2, "SIG_STR_PERCENT", sig_str_percent)
+        fdf.insert(3, "TOTAL_STR_PERCENT", total_str_percent)
+        fdf.insert(4, "TD_PERCENT", td_percent)
+        fdf.insert(5, "HEAD_STR_PERCENT", head_str_percent)
+        fdf.insert(6, "BODY_STR_PERCENT", body_str_percent)
+        fdf.insert(7, "LEG_STR_PERCENT", leg_str_percent)
+        fdf.insert(8, "STD_STR_PERCENT", stnd_str_percent)
+        fdf.insert(9, "CLINCH_STR_PERCENT", clinch_str_percent)
+        fdf.insert(10, "GRND_STR_LAND_PERCENT", ground_str_percent)
+        return fdf
+
 
 if __name__ == "__main__":
     f = fighter()
@@ -216,4 +250,5 @@ if __name__ == "__main__":
     # print(f.sideBySideStats("Conor McGregor", 'sum',  xNumFights=13))
     # print(f.fighterStats('Conor McGregor'))
     # print(f.fighterPercentage('Israel Adesanya'))
-    print(f.opponentPercentage('Israel Adesanya'))
+    # print(f.opponentPercentage('Israel Adesanya'))
+    print(f.ufcPercentage().groupby(["EVENT","BOUT"]).mean().mean())
