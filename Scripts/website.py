@@ -437,6 +437,15 @@ if rad == "Fighter":
                 s = s.split(" --- ")[0]
                 st.write(indFights[indFights["EVENT"] == s])
 
+    with tab3:
+        container2 = st.container()
+        col_1, col_2 = container2.columns(2)
+
+        col_1.selectbox("How to Compare", ["Fighters", "UFC", "WeightClass"])
+        st.dataframe(fc.fighterPercentage(fighterSelection).mean())
+        st.dataframe(fc.opponentPercentage(fighterSelection).mean())
+        st.write(fc.ufcPercentage().mean())
+
 
 if rad == "UFC":
 
@@ -495,7 +504,7 @@ if rad == "UFC":
         st.plotly_chart(fig, use_container_width=True)
 
     if opt == "WeightClass":
-        ufc = fc.individualFightStats(cleanDataDF)
+        ufc = fc.individualFightStats()
         fightCount = ufc["WeightClass"].value_counts()
         ufcSumStatsGrouped = (ufc.groupby("WeightClass").mean())
         for i in ufcSumStatsGrouped.columns[:-1]:
