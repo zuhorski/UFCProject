@@ -91,7 +91,7 @@ with open("../Events2/event names.txt") as file:
 
 
 # FROM EVENT URL GET THE INDIVIDUAL FIGHTS URLS
-for id in range(5, -1, -1): # 575 len(event_details_df.iloc[:576, :2])
+for id in range(7, -1, -1): # 575 len(event_details_df.iloc[:576, :2])
     event_url = event_details_df.iloc[:, :2]
     event_url = event_url["URL"][id]
     soup = LIB.get_soup(event_url)  # get soup
