@@ -1,3 +1,5 @@
+from timeit import timeit
+
 import pandas as pd
 import numpy as np
 
@@ -249,6 +251,16 @@ if __name__ == "__main__":
     # print(f.sideBySideStats("Conor McGregor", 'p'))
     # print(f.sideBySideStats("Conor McGregor", 'sum',  xNumFights=13))
     # print(f.fighterStats('Conor McGregor'))
-    # print(f.fighterPercentage('Israel Adesanya'))
-    # print(f.opponentPercentage('Israel Adesanya'))
-    print(f.ufcPercentage().groupby(["EVENT","BOUT"]).mean().mean())
+    # i = (f.fighterPercentage('Sean OMalley').iloc[:, 2:])
+    # o = (f.opponentPercentage('Sean OMalley').iloc[:, 2:])
+
+    # u = (f.ufcPercentage().iloc[:, 2:])
+
+
+
+
+    # 'SIG_STR_PERCENT', 'TOTAL_STR_PERCENT', 'TD_PERCENT',
+    #        'HEAD_STR_PERCENT', 'BODY_STR_PERCENT', 'LEG_STR_PERCENT',
+    #        'STD_STR_PERCENT', 'CLINCH_STR_PERCENT', 'GRND_STR_LAND_PERCENT'
+
+
